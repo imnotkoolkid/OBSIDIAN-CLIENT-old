@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Obsidian Client Menu</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #9d84ff;
+      --primary-dark: #7058e0;
+      --secondary: #c1b6ff;
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --text-color: #fff;
+      --hover-bg: rgba(157, 132, 255, 0.3);
+      --active-item: rgba(157, 132, 255, 0.5);
+    }
+
+    body {
+      margin: 0;
+      background: transparent;
+      height: 500px;
+      width: 700px;
+      overflow: hidden;
+      user-select: none;
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    }
+
+    #client-menu {
+      display: flex;
+      height: 100%;
+      width: 100%;
+      color: var(--text-color);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      background: linear-gradient(135deg, rgba(35, 25, 60, 0.85), rgba(20, 15, 35, 0.9));
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 150px;
+      background: rgba(15, 10, 30, 0.85);
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--glass-border);
+    }
+
+    .header {
+      background: var(--primary-dark);
+      padding: 16px 10px;
+      text-align: center;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .menu-items {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .menu-item {
+      padding: 14px 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      border-left: 3px solid transparent;
+      position: relative;
+      border-radius: 5px;
+    }
+
+    .menu-item i {
+      margin-right: 10px;
+      width: 18px;
+      text-align: center;
+    }
+
+    .menu-item:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--primary);
+      transform: scaleY(0);
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .menu-item:hover {
+      background: var(--hover-bg);
+    }
+
+    .menu-item:hover:before,
+    .menu-item.active:before {
+      transform: scaleY(1);
+    }
+
+    .menu-item.active {
+      background: var(--active-item);
+      font-weight: 500;
+    }
+
+    .content-area {
+      flex: 1;
+      background: rgba(22, 16, 35, 0.75);
+      padding: 20px;
+      overflow-y: auto;
+      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2);
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary) rgba(255, 255, 255, 0.1);
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-dark);
+    }
+
+    .content-panel {
+      display: none;
+      height: 100%;
+    }
+
+    .content-panel.active {
+      display: block;
+    }
+
+    .content-panel h2 {
+      margin: 0 0 16px;
+      color: var(--primary);
+      font: 600 18px/1 system-ui;
+      border-bottom: 1px solid var(--glass-border);
+      padding-bottom: 8px;
+    }
+
+    .content-panel p {
+      font-size: 14px;
+      line-height: 1.5;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .option-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .option-item:last-child {
+      border-bottom: none;
+    }
+
+    .toggle {
+      position: relative;
+      width: 50px;
+      height: 24px;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.2);
+      transition: 0.4s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      content: "";
+      position: absolute;
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background: #fff;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+
+    input:checked+.slider {
+      background: var(--primary);
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(26px);
+    }
+
+    .version {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+      text-align: center;
+      padding: 8px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .css-editor {
+      margin-top: 15px;
+      width: 100%;
+    }
+
+    .css-editor textarea {
+      width: 95%;
+      height: 150px;
+      background: rgba(10, 5, 20, 0.8);
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      color: var(--text-color);
+      font: 12px 'Consolas', monospace;
+      padding: 10px;
+      resize: none;
+      transition: border 0.3s;
+    }
+
+    .css-editor textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .css-link-input,
+    .background-input {
+      margin-top: 12px;
+      width: 95%;
+    }
+
+    .css-link-input input,
+    .background-input input {
+      width: 100%;
+      padding: 8px 10px;
+      background: rgba(10, 5, 20, 0.8);
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      color: var(--text-color);
+      font: 12px system-ui;
+      transition: border 0.3s;
+    }
+
+    .css-link-input input:focus,
+    .background-input input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .input-label {
+      display: block;
+      margin-bottom: 5px;
+      font: 13px system-ui;
+      color: var(--secondary);
+    }
+
+    .css-editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .css-editor-title {
+      font: 500 14px system-ui;
+      color: var(--secondary);
+    }
+
+    .key-bind-button {
+      padding: 8px 12px;
+      background: var(--primary-dark);
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      color: var(--text-color);
+      font: 12px system-ui;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .key-bind-button:hover {
+      background: var(--primary);
+    }
+
+    .key-display {
+      font: 12px system-ui;
+      color: var(--secondary);
+      margin-left: 10px;
+    }
+
+    .scripts-dropdown {
+      display: none;
+      background: rgba(10, 5, 20, 0.9);
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      margin-top: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+      width: 100%;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary) rgba(255, 255, 255, 0.1);
+      position: relative;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .scripts-dropdown::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .scripts-dropdown::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    .scripts-dropdown::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 4px;
+    }
+
+    .scripts-dropdown::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-dark);
+    }
+
+    .scripts-dropdown ul {
+      list-style: none;
+      margin: 0;
+      padding: 10px;
+    }
+
+    .scripts-dropdown li {
+      padding: 5px 10px;
+      color: var(--text-color);
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+
+    .scripts-dropdown li:hover {
+      background: var(--hover-bg);
+      border-radius: 4px;
+    }
+
+    .scripts-dropdown.show {
+      display: block;
+    }
+
+    .arrow-icon {
+      cursor: pointer;
+      color: var(--text-color);
+      font-size: 14px;
+      transition: transform 0.3s ease, color 0.2s;
+      margin-left: 10px;
+    }
+
+    .arrow-icon:hover {
+      color: var(--primary);
+    }
+
+    .arrow-icon.active {
+      transform: rotate(180deg);
+    }
+
+    .arrow-icon.hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="client-menu">
+    <div class="sidebar">
+      <div class="header">Obsidian Client</div>
+      <div class="menu-items">
+        <div class="menu-item active" data-tab="ui"><i class="fas fa-desktop"></i>UI</div>
+        <div class="menu-item" data-tab="performance"><i class="fas fa-tachometer-alt"></i>Performance</div>
+        <div class="menu-item" data-tab="scripts"><i class="fas fa-code"></i>Scripts</div>
+        <div class="menu-item" data-tab="other"><i class="fas fa-cog"></i>Other</div>
+        <div class="menu-item" data-tab="about"><i class="fas fa-info-circle"></i>About</div>
+      </div>
+      <div class="version">v1.0</div>
+    </div>
+    <div class="content-area">
+      <div class="content-panel active" id="ui-panel">
+        <h2>UI Settings</h2>
+        <div class="option-item">
+          <span>Custom CSS</span>
+          <label class="toggle">
+            <input type="checkbox" id="custom-css-toggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="background-input">
+          <label class="input-label">Background Image URL</label>
+          <input type="text" id="background-input" placeholder="https://example.com/background.jpg">
+        </div>
+        <div class="css-link-input">
+          <label class="input-label">CSS File URL</label>
+          <input type="text" id="css-link-input" placeholder="https://example.com/style.css">
+        </div>
+        <div class="css-editor">
+          <div class="css-editor-header">
+            <div class="css-editor-title">CSS Code</div>
+          </div>
+          <textarea id="css-code-editor" placeholder="/* Paste your custom CSS here */"></textarea>
+        </div>
+      </div>
+      <div class="content-panel" id="performance-panel">
+        <h2>Performance Settings</h2>
+      </div>
+      <div class="content-panel" id="scripts-panel">
+        <h2>Scripts Manager</h2>
+        <div class="option-item">
+          <span>Loaded Scripts: <span id="loaded-scripts-count">0</span></span>
+          <i class="fas fa-chevron-down arrow-icon" id="toggle-scripts-dropdown"></i>
+        </div>
+        <div id="scripts-dropdown" class="scripts-dropdown">
+          <ul id="scripts-list"></ul>
+        </div>
+        <div class="option-item">
+          <span>Open Scripts Folder</span>
+          <button class="key-bind-button" id="open-scripts-folder">Open</button>
+        </div>
+      </div>
+      <div class="content-panel" id="other-panel">
+        <h2>Other Settings</h2>
+        <div class="option-item">
+          <span>Enable Developer Tools</span>
+          <label class="toggle">
+            <input type="checkbox" id="dev-tools-toggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="option-item">
+          <span>Menu Toggle Key</span>
+          <div>
+            <button class="key-bind-button" id="key-bind-button">Set Key</button>
+            <span class="key-display" id="key-display">ShiftRight</span>
+          </div>
+        </div>
+      </div>
+      <div class="content-panel" id="about-panel">
+        <h2>About Obsidian Client</h2>
+        <p>Obsidian Client </p>
+        <div style="margin-top: 20px; font-size: 12px; color: rgba(255,255,255,0.6);">
+          <div>Version: 1.0.0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const keys = {
+      css: 'obsidian-client-custom-css',
+      cssEnabled: 'obsidian-client-custom-css-enabled',
+      cssLink: 'obsidian-client-css-link',
+      background: 'obsidian-client-background',
+      devTools: 'obsidian-client-dev-tools',
+      menuKey: 'obsidian-client-menu-key'
+    };
+
+    const els = {
+      cssToggle: document.getElementById('custom-css-toggle'),
+      cssEditor: document.getElementById('css-code-editor'),
+      cssLink: document.getElementById('css-link-input'),
+      background: document.getElementById('background-input'),
+      devTools: document.getElementById('dev-tools-toggle'),
+      keyBtn: document.getElementById('key-bind-button'),
+      keyDisp: document.getElementById('key-display'),
+      openScriptsFolder: document.getElementById('open-scripts-folder'),
+      scriptCount: document.getElementById('loaded-scripts-count'),
+      dropdownToggle: document.getElementById('toggle-scripts-dropdown'),
+      scriptsList: document.getElementById('scripts-list')
+    };
+
+    function loadSettings() {
+      els.cssToggle.checked = localStorage.getItem(keys.cssEnabled) === 'true';
+      els.cssLink.value = localStorage.getItem(keys.cssLink) || '';
+      els.cssEditor.value = localStorage.getItem(keys.css) || '';
+      els.background.value = localStorage.getItem(keys.background) || '';
+      els.devTools.checked = localStorage.getItem(keys.devTools) === 'true';
+      window.obsidianClient.setDevTools(els.devTools.checked);
+      const key = localStorage.getItem(keys.menuKey) || 'ShiftRight';
+      els.keyDisp.textContent = key;
+      window.obsidianClient.setMenuToggleKey(key);
+      if (els.cssToggle.checked) applyCSS();
+      if (els.background.value.trim()) applyBackground();
+      loadScriptsList();
+    }
+
+    function applyCSS() {
+      if (!els.cssToggle.checked) return window.obsidianClient.removeCSS();
+      const link = els.cssLink.value.trim();
+      link ? window.obsidianClient.injectCSSFromURL(link) : els.cssEditor.value.trim() && window.obsidianClient.injectCSS(els.cssEditor.value);
+    }
+
+    function applyBackground() {
+      const url = els.background.value.trim();
+      url ? window.obsidianClient.injectBackground(url) : window.obsidianClient.removeBackground();
+    }
+
+    function debounce(fn, ms) {
+      let timeout;
+      return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn(...args), ms);
+      };
+    }
+
+    function loadScriptsList() {
+      const scripts = window.obsidianClient.getPreloadedScripts();
+      els.scriptCount.textContent = scripts.length;
+      els.scriptsList.innerHTML = scripts.length ? scripts.map(s => `<li>${s}</li>`).join('') : '<li>No scripts loaded</li>';
+      els.dropdownToggle.classList.toggle('hidden', !scripts.length);
+    }
+
+    els.cssToggle.addEventListener('change', () => {
+      localStorage.setItem(keys.cssEnabled, els.cssToggle.checked);
+      applyCSS();
+    });
+
+    els.cssEditor.addEventListener('input', debounce(() => {
+      localStorage.setItem(keys.css, els.cssEditor.value);
+      if (els.cssToggle.checked && !els.cssLink.value.trim()) window.obsidianClient.injectCSS(els.cssEditor.value);
+    }, 100));
+
+    els.cssLink.addEventListener('input', debounce(() => {
+      localStorage.setItem(keys.cssLink, els.cssLink.value);
+      if (els.cssToggle.checked) applyCSS();
+    }, 100));
+
+    els.background.addEventListener('input', debounce(() => {
+      localStorage.setItem(keys.background, els.background.value);
+      applyBackground();
+    }, 100));
+
+    els.devTools.addEventListener('change', () => {
+      localStorage.setItem(keys.devTools, els.devTools.checked);
+      window.obsidianClient.setDevTools(els.devTools.checked);
+    });
+
+    els.openScriptsFolder.addEventListener('click', () => window.obsidianClient.openScriptsFolder());
+
+    els.dropdownToggle.addEventListener('click', () => {
+      const dropdown = document.getElementById('scripts-dropdown');
+      dropdown.classList.toggle('show');
+      els.dropdownToggle.classList.toggle('active');
+      if (dropdown.classList.contains('show')) {
+        document.addEventListener('click', e => {
+          if (!dropdown.contains(e.target) && !els.dropdownToggle.contains(e.target)) {
+            dropdown.classList.remove('show');
+            els.dropdownToggle.classList.remove('active');
+            document.removeEventListener('click', this);
+          }
+        });
+      }
+    });
+
+    let settingKey = false;
+    els.keyBtn.addEventListener('click', () => {
+      settingKey = true;
+      els.keyBtn.textContent = 'Press a key...';
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.code === els.keyDisp.textContent) window.obsidianClient.closeMenu();
+      if (settingKey) {
+        e.preventDefault();
+        const key = e.code;
+        localStorage.setItem(keys.menuKey, key);
+        els.keyDisp.textContent = key;
+        window.obsidianClient.setMenuToggleKey(key);
+        els.keyBtn.textContent = 'Set Key';
+        settingKey = false;
+      }
+    });
+
+    document.querySelectorAll('.menu-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(`${item.dataset.tab}-panel`)?.classList.add('active');
+        if (item.dataset.tab === 'scripts') loadScriptsList();
+      });
+    });
+
+    loadSettings();
+  </script>
+</body>
+
+</html>
