@@ -1,0 +1,32 @@
+{
+  "name": "obsidian-client",
+  "version": "1.0.0",
+  "description": "Obsidian Client for Kirka.io",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "author": "imnotkoolkid",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.obsidian.client",
+    "productName": "Obsidian Client",
+    "directories": { "output": "dist" },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/Obsidian Client.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "installerIcon": "assets/Obsidian Client.ico",
+      "uninstallerIcon": "assets/Obsidian Client.ico",
+      "uninstallDisplayName": "Obsidian Client",
+      "allowToChangeInstallationDirectory": false
+    }
+  }
+}
