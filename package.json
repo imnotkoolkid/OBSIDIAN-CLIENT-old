@@ -15,7 +15,7 @@
   },
   "build": {
     "appId": "com.obsidian.client",
-    "productName": "Obsidian Client",
+    "productName": "Obsidian Client (pre release)",
     "directories": { "output": "dist" },
     "win": {
       "target": "nsis",
