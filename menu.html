@@ -1,18 +1,14 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="UTF-8">
   <title>Obsidian Client Menu</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --primary: #9d84ff;
+      --primary: #9277fe;
       --primary-dark: #7058e0;
-      --secondary: #c1b6ff;
-      --glass-border: rgba(255, 255, 255, 0.12);
       --text-color: #fff;
-      --hover-bg: rgba(157, 132, 255, 0.3);
       --active-item: rgba(157, 132, 255, 0.5);
     }
 
@@ -33,7 +29,7 @@
       color: var(--text-color);
       border: 1px solid var(--glass-border);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      background: linear-gradient(135deg, rgba(35, 25, 60, 0.85), rgba(20, 15, 35, 0.9));
+      background: linear-gradient(135deg, rgba(35, 25, 60, 0.909), rgba(20, 15, 35, 0.909));
       border-radius: 12px;
       overflow: hidden;
     }
@@ -159,12 +155,17 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 0;
+      padding: 12px 0;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .option-item:last-child {
       border-bottom: none;
+    }
+
+    .option-label {
+      width: 120px;
+      font-size: 14px;
     }
 
     .toggle {
@@ -206,6 +207,59 @@
 
     input:checked+.slider:before {
       transform: translateX(26px);
+    }
+
+    .range-slider {
+      display: flex;
+      align-items: center;
+      width: 200px;
+    }
+
+    .range-slider input[type="range"] {
+      width: 100%;
+      margin: 0 10px;
+      -webkit-appearance: none;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      outline: none;
+      transition: background 0.3s;
+    }
+
+    .range-slider input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--primary);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .range-slider input[type="range"]::-webkit-slider-thumb:hover {
+      background: var(--primary-dark);
+    }
+
+    .range-value {
+      min-width: 40px;
+      text-align: right;
+      font-size: 12px;
+      color: var(--text-color);
+    }
+
+    .reset-button {
+      margin-top: 12px;
+      padding: 8px 16px;
+      background: var(--primary-dark);
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      color: var(--text-color);
+      font: 12px system-ui;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .reset-button:hover {
+      background: var(--primary);
     }
 
     .version {
@@ -278,7 +332,7 @@
     }
 
     .css-editor-title {
-      font: 500 14px system-ui;
+      font{Hz:1st}font: 500 14px system-ui;
       color: var(--secondary);
     }
 
@@ -303,62 +357,6 @@
       margin-left: 10px;
     }
 
-    .scripts-dropdown {
-      display: none;
-      background: rgba(10, 5, 20, 0.9);
-      border: 1px solid var(--glass-border);
-      border-radius: 6px;
-      margin-top: 5px;
-      max-height: 200px;
-      overflow-y: auto;
-      width: 100%;
-      scrollbar-width: thin;
-      scrollbar-color: var(--primary) rgba(255, 255, 255, 0.1);
-      position: relative;
-      z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    .scripts-dropdown::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .scripts-dropdown::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-    }
-
-    .scripts-dropdown::-webkit-scrollbar-thumb {
-      background: var(--primary);
-      border-radius: 4px;
-    }
-
-    .scripts-dropdown::-webkit-scrollbar-thumb:hover {
-      background: var(--primary-dark);
-    }
-
-    .scripts-dropdown ul {
-      list-style: none;
-      margin: 0;
-      padding: 10px;
-    }
-
-    .scripts-dropdown li {
-      padding: 5px 10px;
-      color: var(--text-color);
-      font-size: 13px;
-      transition: background 0.2s;
-    }
-
-    .scripts-dropdown li:hover {
-      background: var(--hover-bg);
-      border-radius: 4px;
-    }
-
-    .scripts-dropdown.show {
-      display: block;
-    }
-
     .arrow-icon {
       cursor: pointer;
       color: var(--text-color);
@@ -380,23 +378,81 @@
     }
   </style>
 </head>
-
 <body>
   <div id="client-menu">
     <div class="sidebar">
       <div class="header">Obsidian Client</div>
       <div class="menu-items">
-        <div class="menu-item active" data-tab="ui"><i class="fas fa-desktop"></i>UI</div>
-        <div class="menu-item" data-tab="performance"><i class="fas fa-tachometer-alt"></i>Performance</div>
-        <div class="menu-item" data-tab="scripts"><i class="fas fa-code"></i>Scripts</div>
-        <div class="menu-item" data-tab="other"><i class="fas fa-cog"></i>Other</div>
-        <div class="menu-item" data-tab="about"><i class="fas fa-info-circle"></i>About</div>
+        <div class="menu-item active" data-tab="general"><i class="fas fa-home"></i>General</div>
+        <div class="menu-item" data-tab="ui"><i class="fas fa-display"></i>UI</div>
+        <div class="menu-item" data-tab="css"><i class="fas fa-palette"></i>CSS</div>
+        <div class="menu-item" data-tab="scripts"><i class="fas fa-file-code"></i>Scripts</div>
+        <div class="menu-item" data-tab="other"><i class="fas fa-tools"></i>Other</div>
+        <div class="menu-item" data-tab="about"><i class="fas fa-circle-info"></i>About</div>
       </div>
-      <div class="version">v1.0</div>
+      <div class="version">pre release</div>
     </div>
     <div class="content-area">
-      <div class="content-panel active" id="ui-panel">
+      <div class="content-panel active" id="general-panel">
+        <h2>General Settings</h2>
+        <div class="option-item">
+          <span class="option-label">Brightness</span>
+          <div class="range-slider">
+            <input type="range" id="brightness-slider" min="0" max="120" value="100" step="1">
+            <span class="range-value" id="brightness-value">100%</span>
+          </div>
+        </div>
+        <div class="option-item">
+          <span class="option-label">Contrast</span>
+          <div class="range-slider">
+            <input type="range" id="contrast-slider" min="0.9" max="1.5" value="1" step="0.01">
+            <span class="range-value" id="contrast-value">1</span>
+          </div>
+        </div>
+        <div class="option-item">
+          <span class="option-label">Saturation</span>
+          <div class="range-slider">
+            <input type="range" id="saturation-slider" min="0" max="3" value="1" step="0.01">
+
+
+            <span class="range-value" id="saturation-value">1</span>
+          </div>
+        </div>
+        <div class="option-item">
+          <span class="option-label">Grayscale</span>
+          <div class="range-slider">
+            <input type="range" id="grayscale-slider" min="0" max="1" value="0" step="0.01">
+            <span class="range-value" id="grayscale-value">0</span>
+          </div>
+        </div>
+        <div class="option-item">
+          <span class="option-label">Hue</span>
+          <div class="range-slider">
+            <input type="range" id="hue-slider" min="0" max="180" value="0" step="1">
+            <span class="range-value" id="hue-value">0</span>
+          </div>
+        </div>
+        <div class="option-item">
+          <span class="option-label">Invert</span>
+          <label class="toggle">
+            <input type="checkbox" id="invert-toggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="option-item">
+          <span class="option-label">Sepia</span>
+          <div class="range-slider">
+            <input type="range" id="sepia-slider" min="0" max="1" value="0" step="0.01">
+            <span class="range-value" id="sepia-value">0</span>
+          </div>
+        </div>
+        <button class="reset-button" id="reset-settings">Reset to Defaults</button>
+      </div>
+      <div class="content-panel" id="ui-panel">
         <h2>UI Settings</h2>
+      </div>
+      <div class="content-panel" id="css-panel">
+        <h2>CSS Settings</h2>
         <div class="option-item">
           <span>Custom CSS</span>
           <label class="toggle">
@@ -419,22 +475,16 @@
           <textarea id="css-code-editor" placeholder="/* Paste your custom CSS here */"></textarea>
         </div>
       </div>
-      <div class="content-panel" id="performance-panel">
-        <h2>Performance Settings</h2>
-      </div>
       <div class="content-panel" id="scripts-panel">
         <h2>Scripts Manager</h2>
         <div class="option-item">
           <span>Loaded Scripts: <span id="loaded-scripts-count">0</span></span>
-          <i class="fas fa-chevron-down arrow-icon" id="toggle-scripts-dropdown"></i>
-        </div>
-        <div id="scripts-dropdown" class="scripts-dropdown">
-          <ul id="scripts-list"></ul>
         </div>
         <div class="option-item">
           <span>Open Scripts Folder</span>
           <button class="key-bind-button" id="open-scripts-folder">Open</button>
         </div>
+        <div id="scripts-list-container"></div>
       </div>
       <div class="content-panel" id="other-panel">
         <h2>Other Settings</h2>
@@ -455,23 +505,14 @@
       </div>
       <div class="content-panel" id="about-panel">
         <h2>About Obsidian Client</h2>
-        <p>Obsidian Client </p>
+        <p>Obsidian Client</p>
         <div style="margin-top: 20px; font-size: 12px; color: rgba(255,255,255,0.6);">
-          <div>Version: 1.0.0</div>
+          <div>Version: pre release</div>
         </div>
       </div>
     </div>
   </div>
   <script>
-    const keys = {
-      css: 'obsidian-client-custom-css',
-      cssEnabled: 'obsidian-client-custom-css-enabled',
-      cssLink: 'obsidian-client-css-link',
-      background: 'obsidian-client-background',
-      devTools: 'obsidian-client-dev-tools',
-      menuKey: 'obsidian-client-menu-key'
-    };
-
     const els = {
       cssToggle: document.getElementById('custom-css-toggle'),
       cssEditor: document.getElementById('css-code-editor'),
@@ -482,22 +523,58 @@
       keyDisp: document.getElementById('key-display'),
       openScriptsFolder: document.getElementById('open-scripts-folder'),
       scriptCount: document.getElementById('loaded-scripts-count'),
-      dropdownToggle: document.getElementById('toggle-scripts-dropdown'),
-      scriptsList: document.getElementById('scripts-list')
+      scriptsContainer: document.getElementById('scripts-list-container'),
+      brightnessSlider: document.getElementById('brightness-slider'),
+      brightnessValue: document.getElementById('brightness-value'),
+      contrastSlider: document.getElementById('contrast-slider'),
+      contrastValue: document.getElementById('contrast-value'),
+      saturationSlider: document.getElementById('saturation-slider'),
+      saturationValue: document.getElementById('saturation-value'),
+      grayscaleSlider: document.getElementById('grayscale-slider'),
+      grayscaleValue: document.getElementById('grayscale-value'),
+      hueSlider: document.getElementById('hue-slider'),
+      hueValue: document.getElementById('hue-value'),
+      invertToggle: document.getElementById('invert-toggle'),
+      sepiaSlider: document.getElementById('sepia-slider'),
+      sepiaValue: document.getElementById('sepia-value'),
+      resetButton: document.getElementById('reset-settings'),
     };
 
+    function debounce(fn, ms) {
+      let timeout;
+      return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn(...args), ms);
+      };
+    }
+
     function loadSettings() {
-      els.cssToggle.checked = localStorage.getItem(keys.cssEnabled) === 'true';
-      els.cssLink.value = localStorage.getItem(keys.cssLink) || '';
-      els.cssEditor.value = localStorage.getItem(keys.css) || '';
-      els.background.value = localStorage.getItem(keys.background) || '';
-      els.devTools.checked = localStorage.getItem(keys.devTools) === 'true';
-      window.obsidianClient.setDevTools(els.devTools.checked);
-      const key = localStorage.getItem(keys.menuKey) || 'ShiftRight';
+      const settings = window.obsidianClient.getSettings();
+      els.cssToggle.checked = settings.cssEnabled || false;
+      els.cssLink.value = settings.cssLink || '';
+      els.cssEditor.value = settings.css || '';
+      els.background.value = settings.background || '';
+      els.devTools.checked = settings.devTools || false;
+      els.brightnessSlider.value = settings.brightness || '100';
+      els.brightnessValue.textContent = `${els.brightnessSlider.value}%`;
+      els.contrastSlider.value = settings.contrast || '1';
+      els.contrastValue.textContent = els.contrastSlider.value;
+      els.saturationSlider.value = settings.saturation || '1';
+      els.saturationValue.textContent = els.saturationSlider.value;
+      els.grayscaleSlider.value = settings.grayscale || '0';
+      els.grayscaleValue.textContent = els.grayscaleSlider.value;
+      els.hueSlider.value = settings.hue || '0';
+      els.hueValue.textContent = els.hueSlider.value;
+      els.invertToggle.checked = settings.invert || false;
+      els.sepiaSlider.value = settings.sepia || '0';
+      els.sepiaValue.textContent = els.sepiaSlider.value;
+      const key = settings.menuToggleKey || 'ShiftRight';
       els.keyDisp.textContent = key;
+      window.obsidianClient.setDevTools(els.devTools.checked);
       window.obsidianClient.setMenuToggleKey(key);
       if (els.cssToggle.checked) applyCSS();
       if (els.background.value.trim()) applyBackground();
+      applyGeneralSettings();
       loadScriptsList();
     }
 
@@ -512,62 +589,156 @@
       url ? window.obsidianClient.injectBackground(url) : window.obsidianClient.removeBackground();
     }
 
-    function debounce(fn, ms) {
-      let timeout;
-      return (...args) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => fn(...args), ms);
-      };
+    function applyGeneralSettings() {
+      const brightness = els.brightnessSlider.value;
+      const contrast = els.contrastSlider.value;
+      const saturation = els.saturationSlider.value;
+      const grayscale = els.grayscaleSlider.value;
+      const hue = els.hueSlider.value;
+      const invert = els.invertToggle.checked ? 1 : 0;
+      const sepia = els.sepiaSlider.value;
+
+      const css = `
+        body, html {
+          filter: brightness(${brightness}%) contrast(${contrast}) saturate(${saturation}) grayscale(${grayscale}) hue-rotate(${hue}deg) invert(${invert}) sepia(${sepia});
+        }
+      `;
+      window.obsidianClient.injectGeneralCSS(css);
+    }
+
+    function resetSettings() {
+      els.brightnessSlider.value = '100';
+      els.brightnessValue.textContent = '100%';
+      els.contrastSlider.value = '1';
+      els.contrastValue.textContent = '1';
+      els.saturationSlider.value = '1';
+      els.saturationValue.textContent = '1';
+      els.grayscaleSlider.value = '0';
+      els.grayscaleValue.textContent = '0';
+      els.hueSlider.value = '0';
+      els.hueValue.textContent = '0';
+      els.invertToggle.checked = false;
+      els.sepiaSlider.value = '0';
+      els.sepiaValue.textContent = '0';
+      window.obsidianClient.resetGeneralSettings({
+        brightness: '100',
+        contrast: '1',
+        saturation: '1',
+        grayscale: '0',
+        hue: '0',
+        invert: false,
+        sepia: '0'
+      });
+      applyGeneralSettings();
     }
 
     function loadScriptsList() {
-      const scripts = window.obsidianClient.getPreloadedScripts();
-      els.scriptCount.textContent = scripts.length;
-      els.scriptsList.innerHTML = scripts.length ? scripts.map(s => `<li>${s}</li>`).join('') : '<li>No scripts loaded</li>';
-      els.dropdownToggle.classList.toggle('hidden', !scripts.length);
+      const allScripts = window.obsidianClient.getAllScripts();
+      const preloadedScripts = window.obsidianClient.getPreloadedScripts();
+
+      els.scriptCount.textContent = preloadedScripts.length;
+
+      if (allScripts.length === 0) {
+        els.scriptsContainer.innerHTML = '<div style="padding: 10px 0; color: rgba(255,255,255,0.6); font-size: 13px;">No scripts found</div>';
+        return;
+      }
+
+      els.scriptsContainer.innerHTML = allScripts.map(script => {
+        const scriptName = script.replace('.js', '');
+        const isEnabled = preloadedScripts.includes(script);
+        return `
+      <div class="option-item">
+        <span>${scriptName}</span>
+        <label class="toggle">
+          <input type="checkbox" class="script-toggle" data-script="${script}" ${isEnabled ? 'checked' : ''}>
+          <span class="slider"></span>
+        </label>
+      </div>
+    `;
+      }).join('');
+
+      document.querySelectorAll('.script-toggle').forEach(toggle => {
+        toggle.addEventListener('change', (e) => {
+          const script = e.target.dataset.script;
+          const isEnabled = e.target.checked;
+          window.obsidianClient.toggleScript(script, isEnabled);
+          setTimeout(() => {
+            window.obsidianClient.closeMenu();
+            window.obsidianClient.reloadMainWindow();
+          }, 100);
+        });
+      });
     }
 
     els.cssToggle.addEventListener('change', () => {
-      localStorage.setItem(keys.cssEnabled, els.cssToggle.checked);
+      window.obsidianClient.saveSettings({ cssEnabled: els.cssToggle.checked });
       applyCSS();
     });
 
     els.cssEditor.addEventListener('input', debounce(() => {
-      localStorage.setItem(keys.css, els.cssEditor.value);
+      window.obsidianClient.saveSettings({ css: els.cssEditor.value });
       if (els.cssToggle.checked && !els.cssLink.value.trim()) window.obsidianClient.injectCSS(els.cssEditor.value);
     }, 100));
 
     els.cssLink.addEventListener('input', debounce(() => {
-      localStorage.setItem(keys.cssLink, els.cssLink.value);
+      window.obsidianClient.saveSettings({ cssLink: els.cssLink.value });
       if (els.cssToggle.checked) applyCSS();
     }, 100));
 
     els.background.addEventListener('input', debounce(() => {
-      localStorage.setItem(keys.background, els.background.value);
+      window.obsidianClient.saveSettings({ background: els.background.value });
       applyBackground();
     }, 100));
 
     els.devTools.addEventListener('change', () => {
-      localStorage.setItem(keys.devTools, els.devTools.checked);
       window.obsidianClient.setDevTools(els.devTools.checked);
+      window.obsidianClient.saveSettings({ devTools: els.devTools.checked });
     });
+
+    els.brightnessSlider.addEventListener('input', () => {
+      els.brightnessValue.textContent = `${els.brightnessSlider.value}%`;
+      window.obsidianClient.saveSettings({ brightness: els.brightnessSlider.value });
+      applyGeneralSettings();
+    });
+
+    els.contrastSlider.addEventListener('input', () => {
+      els.contrastValue.textContent = els.contrastSlider.value;
+      window.obsidianClient.saveSettings({ contrast: els.contrastSlider.value });
+      applyGeneralSettings();
+    });
+
+    els.saturationSlider.addEventListener('input', () => {
+      els.saturationValue.textContent = els.saturationSlider.value;
+      window.obsidianClient.saveSettings({ saturation: els.saturationSlider.value });
+      applyGeneralSettings();
+    });
+
+    els.grayscaleSlider.addEventListener('input', () => {
+      els.grayscaleValue.textContent = els.grayscaleSlider.value;
+      window.obsidianClient.saveSettings({ grayscale: els.grayscaleSlider.value });
+      applyGeneralSettings();
+    });
+
+    els.hueSlider.addEventListener('input', () => {
+      els.hueValue.textContent = els.hueSlider.value;
+      window.obsidianClient.saveSettings({ hue: els.hueSlider.value });
+      applyGeneralSettings();
+    });
+
+    els.invertToggle.addEventListener('change', () => {
+      window.obsidianClient.saveSettings({ invert: els.invertToggle.checked });
+      applyGeneralSettings();
+    });
+
+    els.sepiaSlider.addEventListener('input', () => {
+      els.sepiaValue.textContent = els.sepiaSlider.value;
+      window.obsidianClient.saveSettings({ sepia: els.sepiaSlider.value });
+      applyGeneralSettings();
+    });
+
+    els.resetButton.addEventListener('click', resetSettings);
 
     els.openScriptsFolder.addEventListener('click', () => window.obsidianClient.openScriptsFolder());
-
-    els.dropdownToggle.addEventListener('click', () => {
-      const dropdown = document.getElementById('scripts-dropdown');
-      dropdown.classList.toggle('show');
-      els.dropdownToggle.classList.toggle('active');
-      if (dropdown.classList.contains('show')) {
-        document.addEventListener('click', e => {
-          if (!dropdown.contains(e.target) && !els.dropdownToggle.contains(e.target)) {
-            dropdown.classList.remove('show');
-            els.dropdownToggle.classList.remove('active');
-            document.removeEventListener('click', this);
-          }
-        });
-      }
-    });
 
     let settingKey = false;
     els.keyBtn.addEventListener('click', () => {
@@ -580,9 +751,8 @@
       if (settingKey) {
         e.preventDefault();
         const key = e.code;
-        localStorage.setItem(keys.menuKey, key);
-        els.keyDisp.textContent = key;
         window.obsidianClient.setMenuToggleKey(key);
+        els.keyDisp.textContent = key;
         els.keyBtn.textContent = 'Set Key';
         settingKey = false;
       }
@@ -591,8 +761,8 @@
     document.querySelectorAll('.menu-item').forEach(item => {
       item.addEventListener('click', () => {
         document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
         document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+        item.classList.add('active');
         document.getElementById(`${item.dataset.tab}-panel`)?.classList.add('active');
         if (item.dataset.tab === 'scripts') loadScriptsList();
       });
@@ -601,5 +771,4 @@
     loadSettings();
   </script>
 </body>
-
 </html>
