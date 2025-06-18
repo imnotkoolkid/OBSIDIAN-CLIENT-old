@@ -64,6 +64,12 @@ async function saveSettings(settings) {
 
 function applySwitches() {
   app.commandLine.appendSwitch("disable-frame-rate-limit");
+  app.commandLine.appendSwitch("disable-gpu-vsync");
+  app.commandLine.appendSwitch("in-process-gpu");
+  app.commandLine.appendSwitch("enable-gpu-rasterization");
+  app.commandLine.appendSwitch("ignore-gpu-blacklist");
+  app.commandLine.appendSwitch("high-dpi-support", "1");
+  app.commandLine.appendSwitch("enable-zero-copy");
   app.allowRendererProcessReuse = true;
 }
 
@@ -107,7 +113,22 @@ function createWindow() {
   mainWindow.webContents.setUserAgent(
     `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.116 Safari/537.36 Electron/10.4.7 OBSIDIANClient/${app.getVersion()}`
   );
+const { session } = mainWindow.webContents;
 
+session.webRequest.onBeforeSendHeaders((details, callback) => {
+  let newUA = details.requestHeaders['User-Agent'];
+
+  if (details.url.includes('discord.com')) {
+    newUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Discord/1.0.9000';
+  } else if (details.url.includes('twitch.tv')) {
+    newUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Twitch/9.0';
+  } else if (details.url.includes('kirka.io')) {
+    newUA = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.116 Safari/537.36 Electron/10.4.7 OBSIDIANClient/${app.getVersion()}`;
+  }
+
+  details.requestHeaders['User-Agent'] = newUA;
+  callback({ requestHeaders: details.requestHeaders });
+});
   mainWindow.loadURL("https://kirka.io");
 
   mainWindow.webContents.on('did-finish-load', async () => {
@@ -133,10 +154,15 @@ function createWindow() {
 
   mainWindow.on('page-title-updated', e => e.preventDefault());
 
+  // Prevent tabbing out on Right Shift and other key handling
   mainWindow.webContents.on('before-input-event', (e, input) => {
     const now = Date.now();
     if (now - lastInputTime < 50) return;
     lastInputTime = now;
+
+    if (input.code === 'ShiftRight' && (input.type === 'keyDown' || input.type === 'keyUp')) {
+      e.preventDefault();
+    }
 
     if (input.key === 'F11') {
       if (mainWindow && !mainWindow.isDestroyed()) {
@@ -160,9 +186,19 @@ function createWindow() {
       }
       e.preventDefault();
     }
-  }); // <--- THIS closes the 'before-input-event' listener
+  });
 
-} // <--- THIS closes the createWindow function
+  // ** FIX: refocus window immediately if it loses focus to avoid tabbing out **
+  mainWindow.on('blur', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      setTimeout(() => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.focus();
+        }
+      }, 10);
+    }
+  });
+}
 
 app.whenReady().then(async () => {
   await Promise.all([loadSettings(), ensureScriptsFolder()]);
@@ -177,23 +213,25 @@ function toggleClientMenu() {
 
   const { x, y, width, height } = mainWindow.getBounds();
   clientMenu = new BrowserWindow({
-    width: 700,
-    height: 500,
-    parent: mainWindow,
-    modal: false,
-    frame: false,
-    transparent: true,
-    resizable: false,
-    x: Math.round(x + (width - 700) / 2),
-    y: Math.round(y + (height - 500) / 2),
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
-      javascript: true,
-      images: false
-    }
-  });
+  width: 700,
+  height: 500,
+  parent: mainWindow,
+  modal: false,
+  frame: false,
+  transparent: true,
+  resizable: false,
+  x: Math.round(x + (width - 700) / 2),
+  y: Math.round(y + (height - 500) / 2),
+  webPreferences: {
+    nodeIntegration: false,
+    contextIsolation: true,
+    preload: path.join(__dirname, 'preload.js'),
+    javascript: true,
+    images: false
+  },
+  alwaysOnTop: true,
+  focusable: false, // <<< add this line
+});
 
   clientMenu.loadFile('menu.html');
 
