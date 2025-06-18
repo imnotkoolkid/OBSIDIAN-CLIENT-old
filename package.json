@@ -7,16 +7,19 @@
     "start": "electron .",
     "build": "electron-builder"
   },
-  "author": "imnotkoolkid , akuma",
+  "author": "imnotkoolkid, Akuma",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^28.1.0",
-    "electron-builder": "^24.9.1"
+    "electron": "^10.4.7",
+    "electron-builder": "^23.0.2"
   },
+
   "build": {
     "appId": "com.obsidian.client",
-    "productName": "Obsidian Client (pre release)",
-    "directories": { "output": "dist" },
+    "productName": "Obsidian Client",
+    "directories": {
+      "output": "dist"
+    },
     "win": {
       "target": "nsis",
       "icon": "assets/Obsidian Client.ico"
