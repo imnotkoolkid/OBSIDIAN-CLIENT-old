@@ -103,7 +103,7 @@ function createWindow() {
   });
 
   mainWindow.webContents.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    "`Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.116 Safari/537.36 Electron/10.4.7 OBSIDIANClient/${app.getVersion()}"
   );
 
   mainWindow.loadURL("https://kirka.io");
