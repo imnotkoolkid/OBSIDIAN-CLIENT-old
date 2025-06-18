@@ -70,6 +70,8 @@ function applySwitches() {
 applySwitches();
 
 function createWindow() {
+  let lastInputTime = 0;
+
   splash = new BrowserWindow({
     width: 1280,
     height: 720,
@@ -103,7 +105,7 @@ function createWindow() {
   });
 
   mainWindow.webContents.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.116 Safari/537.36 Electron/10.4.7 OBSIDIANClient/${app.getVersion()}"
+    `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.116 Safari/537.36 Electron/10.4.7 OBSIDIANClient/${app.getVersion()}`
   );
 
   mainWindow.loadURL("https://kirka.io");
@@ -131,12 +133,6 @@ function createWindow() {
 
   mainWindow.on('page-title-updated', e => e.preventDefault());
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-    if (clientMenu && !clientMenu.isDestroyed()) clientMenu.close();
-  });
-
-  let lastInputTime = 0;
   mainWindow.webContents.on('before-input-event', (e, input) => {
     const now = Date.now();
     if (now - lastInputTime < 50) return;
@@ -150,19 +146,23 @@ function createWindow() {
     } else if (input.code === menuToggleKey && input.type === 'keyDown') {
       toggleClientMenu();
       e.preventDefault();
-    } else if (devToolsEnabled && (input.key === 'F12' || (input.control && input.shift && input.key === 'I'))) {
+    } else if (
+      devToolsEnabled &&
+      (input.key === 'F12' || (input.control && input.shift && input.key === 'I'))
+    ) {
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.openDevTools();
       }
       e.preventDefault();
     } else if (input.key === 'F5') {
       if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.reload();
+        mainWindow.loadURL("https://kirka.io");
       }
       e.preventDefault();
     }
-  });
-}
+  }); // <--- THIS closes the 'before-input-event' listener
+
+} // <--- THIS closes the createWindow function
 
 app.whenReady().then(async () => {
   await Promise.all([loadSettings(), ensureScriptsFolder()]);
