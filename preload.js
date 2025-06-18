@@ -11,6 +11,12 @@ contextBridge.exposeInMainWorld('obsidianClient', {
   setMenuToggleKey: key => ipcRenderer.send('set-menu-toggle-key', key),
   getScriptsPath: () => ipcRenderer.sendSync('get-scripts-path'),
   openScriptsFolder: () => ipcRenderer.send('open-scripts-folder'),
-  getScriptsList: () => ipcRenderer.sendSync('get-loaded-scripts'),
-  getPreloadedScripts: () => ipcRenderer.sendSync('get-preloaded-scripts')
+  getPreloadedScripts: () => ipcRenderer.sendSync('get-preloaded-scripts'),
+  getAllScripts: () => ipcRenderer.sendSync('get-all-scripts'),
+  toggleScript: (script, enabled) => ipcRenderer.send('toggle-script', script, enabled),
+  reloadMainWindow: () => ipcRenderer.send('reload-main-window'),
+  getSettings: () => ipcRenderer.sendSync('get-settings'),
+  saveSettings: settings => ipcRenderer.send('save-settings', settings),
+  injectGeneralCSS: css => ipcRenderer.send('inject-general-css', css),
+  resetGeneralSettings: settings => ipcRenderer.send('reset-general-settings', settings),
 });
