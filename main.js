@@ -2,85 +2,75 @@ const { app, BrowserWindow, Menu, ipcMain, shell } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
 const { get: httpsGet } = require('https');
-const alphabet = "abcdefghijklmnopqrstuvwxyz";
 const { get: httpGet } = require('http');
 
 const SETTINGS_WRITE_DELAY = 500;
-let settingsWriteTimer, mainWindow, clientMenu, cssKey, backgroundCssKey;
-let menuToggleKey = 'ShiftRight', devToolsEnabled = false;
-
 const userData = app.getPath('userData');
+const documentsPath = app.getPath('documents');
+const clientSettingsPath = path.join(documentsPath, 'ObsidianClient', 'clientsettings');
+const scriptsPath = path.join(documentsPath, 'ObsidianClient', 'scripts');
 const paths = {
-  settings: path.join(userData, 'settings.json'),
-  css: path.join(userData, 'main.css'),
-  background: path.join(userData, 'background.json')
+  settings: path.join(clientSettingsPath, 'settings.dat'),
+  defaultSettings: path.join(__dirname, 'default_settings.json'),
 };
-const scriptsPath = path.join(app.getPath('documents'), 'ObsidianClient', 'scripts');
 
-let settingsCache, preloadedScripts = [];
+let mainWindow, clientMenu, cssKey, backgroundCssKey, generalCssKey, settingsCache, settingsWriteTimer;
+let menuToggleKey = 'ShiftRight', devToolsEnabled = false, preloadedScripts = [];
 
-async function ensureScriptsFolder() {
+async function ensureFolders() {
   try {
+    await fs.mkdir(clientSettingsPath, { recursive: true });
     await fs.mkdir(scriptsPath, { recursive: true });
   } catch (err) {
-    console.error('Error creating scripts folder:', err);
+    console.error('Error creating folders:', err);
   }
 }
-
-ipcMain.on('get-scripts-path', e => e.returnValue = scriptsPath);
-ipcMain.on('get-loaded-scripts', async e => {
-  try {
-    const files = (await fs.readdir(scriptsPath)).filter(f => f.endsWith('.js'));
-    e.returnValue = files;
-  } catch (err) {
-    console.error('Error reading scripts folder:', err);
-    e.returnValue = [];
-  }
-});
-ipcMain.on('set-preloaded-scripts', (_, scripts) => preloadedScripts = scripts);
-ipcMain.on('get-preloaded-scripts', e => e.returnValue = preloadedScripts);
 
 async function loadSettings() {
   if (settingsCache) return settingsCache;
   try {
-    settingsCache = JSON.parse(await fs.readFile(paths.settings, 'utf8'));
+    const settingsExist = await fs.access(paths.settings).then(() => true).catch(() => false);
+    if (!settingsExist) {
+      const defaultSettings = await fs.readFile(paths.defaultSettings, 'utf8');
+      settingsCache = JSON.parse(defaultSettings);
+      await fs.writeFile(paths.settings, JSON.stringify(settingsCache), 'utf8');
+    } else {
+      const data = await fs.readFile(paths.settings, 'utf8');
+      settingsCache = JSON.parse(data) || {};
+    }
     devToolsEnabled = settingsCache.devToolsEnabled ?? false;
     menuToggleKey = settingsCache.menuToggleKey ?? 'ShiftRight';
+    preloadedScripts = settingsCache.preloadedScripts ?? [];
     return settingsCache;
   } catch (err) {
     console.error('Error loading settings:', err);
-    return {};
+    settingsCache = {};
+    return settingsCache;
   }
 }
 
 async function saveSettings(settings) {
-  try {
-    settingsCache = { ...settingsCache, ...settings };
-    clearTimeout(settingsWriteTimer);
-    settingsWriteTimer = setTimeout(() => fs.writeFile(paths.settings, JSON.stringify(settingsCache), 'utf8'), SETTINGS_WRITE_DELAY);
-  } catch (err) {
-    console.error('Error saving settings:', err);
-  }
+  settingsCache = { ...settingsCache, ...settings };
+  clearTimeout(settingsWriteTimer);
+  settingsWriteTimer = setTimeout(() => fs.writeFile(paths.settings, JSON.stringify(settingsCache), 'utf8').catch(err => console.error('Error saving settings:', err)), SETTINGS_WRITE_DELAY);
 }
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 720,
-    title: "Obsidian Client",
+    width: 1180,
+    height: 680,
+    title: "Obsidian Client (pre release)",
     icon: path.join(__dirname, 'assets', 'Obsidian Client.ico'),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
       preload: path.join(__dirname, 'scriptsPreload.js'),
-      devTools: true
-    }
+      devTools: true,
+    },
   });
 
   mainWindow.loadURL('https://kirka.io/');
-  mainWindow.setTitle("Obsidian Client");
   Menu.setApplicationMenu(null);
-
   mainWindow.on('page-title-updated', e => e.preventDefault());
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -108,11 +98,11 @@ function createWindow() {
     }
   });
 
-  mainWindow.webContents.on('did-finish-load', () => Promise.all([applyCSS(), applyBackground()]));
+  mainWindow.webContents.on('did-finish-load', () => applyConfig());
 }
 
 app.whenReady().then(async () => {
-  await Promise.all([loadSettings(), ensureScriptsFolder()]);
+  await Promise.all([ensureFolders(), loadSettings()]);
   createWindow();
 });
 
@@ -138,50 +128,51 @@ function toggleClientMenu() {
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
       javascript: true,
-      images: false
-    }
+      images: false,
+    },
   });
 
   clientMenu.loadFile('menu.html');
-
   const updateMenuPosition = () => {
     if (clientMenu?.isDestroyed() === false) {
-      requestAnimationFrame(() => {
-        const { x: nx, y: ny, width: nw, height: nh } = mainWindow.getBounds();
-        clientMenu.setPosition(Math.round(nx + (nw - 700) / 2), Math.round(ny + (nh - 500) / 2));
-      });
+      const { x: nx, y: ny, width: nw, height: nh } = mainWindow.getBounds();
+      clientMenu.setPosition(Math.round(nx + (nw - 700) / 2), Math.round(ny + (nh - 500) / 2));
     }
   };
-
   mainWindow.on('move', updateMenuPosition);
-  clientMenu.on('closed', () => mainWindow.removeListener('move', updateMenuPosition));
-  clientMenu.on('blur', () => clientMenu?.isDestroyed() === false && clientMenu.close());
+  clientMenu.on('closed', () => {
+    mainWindow.removeListener('move', updateMenuPosition);
+  });
+  clientMenu.on('blur', () => clientMenu?.close());
 }
 
-async function applyCSS() {
+async function applyConfig() {
   try {
-    const cssConfig = JSON.parse(await fs.readFile(paths.css, 'utf8'));
-    if (cssConfig.enabled) cssConfig.url ? await fetchAndInjectCSS(cssConfig.url) : cssConfig.css && await injectCSS(cssConfig.css);
+    const settings = await loadSettings();
+    if (settings.cssEnabled) {
+      settings.cssLink ? await fetchAndInjectCSS(settings.cssLink) : settings.css && await injectCSS(settings.css);
+    }
+    if (settings.backgroundEnabled && settings.background) injectBackgroundCSS(settings.background);
+    const brightness = settings.brightness || '100';
+    const contrast = settings.contrast || '1';
+    const saturation = settings.saturation || '1';
+    const grayscale = settings.grayscale || '0';
+    const hue = settings.hue || '0';
+    const invert = settings.invert || false;
+    const sepia = settings.sepia || '0';
+    const generalCSS = `
+      body, html {
+        filter: brightness(${brightness}%) contrast(${contrast}) saturate(${saturation}) grayscale(${grayscale}) hue-rotate(${hue}deg) invert(${invert ? 1 : 0}) sepia(${sepia});
+      }
+    `;
+    await injectGeneralCSS(generalCSS);
   } catch (err) {
-    console.error('Error applying CSS:', err);
-    await fs.writeFile(paths.css, JSON.stringify({ enabled: false, css: '', url: '' }), 'utf8');
-  }
-}
-
-async function applyBackground() {
-  try {
-    const { enabled, url } = JSON.parse(await fs.readFile(paths.background, 'utf8'));
-    if (enabled && url) injectBackgroundCSS(url);
-  } catch (err) {
-    console.error('Error applying background:', err);
-    await fs.writeFile(paths.background, JSON.stringify({ enabled: false, url: '' }), 'utf8');
+    console.error('Error applying config:', err);
   }
 }
 
 async function fetchAndInjectCSS(url) {
-  if (mainWindow?.isDestroyed()) return;
   const client = url.startsWith('https') ? httpsGet : httpGet;
-
   return new Promise((resolve, reject) => {
     client(url, { headers: { 'Cache-Control': 'no-cache' } }, res => {
       if (res.statusCode !== 200) {
@@ -191,7 +182,7 @@ async function fetchAndInjectCSS(url) {
       let data = '';
       res.setEncoding('utf8');
       res.on('data', chunk => data += chunk);
-      res.on('end', () => injectCSS(data).then(() => saveCSS(data, true, url)).then(resolve));
+      res.on('end', () => injectCSS(data).then(() => saveSettings({ css: data, cssEnabled: true, cssLink: url })).then(resolve));
     }).on('error', err => {
       console.error('Error fetching CSS:', err);
       reject(err);
@@ -199,97 +190,119 @@ async function fetchAndInjectCSS(url) {
   });
 }
 
-async function saveCSS(css, enabled = true, url = null) {
-  try {
-    await fs.writeFile(paths.css, JSON.stringify({ css, enabled, url }), 'utf8');
-  } catch (err) {
-    console.error('Error saving CSS:', err);
-  }
-}
-
-async function saveBackground(url, enabled = true) {
-  try {
-    await fs.writeFile(paths.background, JSON.stringify({ url, enabled }), 'utf8');
-  } catch (err) {
-    console.error('Error saving background:', err);
-  }
-}
-
 async function injectCSS(css) {
-  if (mainWindow?.isDestroyed()) return;
-  if (cssKey) await mainWindow.webContents.removeInsertedCSS(cssKey).catch(() => {});
-  try {
-    cssKey = await mainWindow.webContents.insertCSS(css);
-    await saveCSS(css, true);
-  } catch (err) {
-    console.error('Error injecting CSS:', err);
-  }
+  if (cssKey) await mainWindow.webContents.removeInsertedCSS(cssKey).catch(() => { });
+  cssKey = await mainWindow.webContents.insertCSS(css);
+  await saveSettings({ css, cssEnabled: true });
+}
+
+async function injectGeneralCSS(css) {
+  if (generalCssKey) await mainWindow.webContents.removeInsertedCSS(generalCssKey).catch(() => { });
+  generalCssKey = await mainWindow.webContents.insertCSS(css);
 }
 
 function injectBackgroundCSS(url) {
-  if (mainWindow?.isDestroyed()) return;
   const css = `#app > div.interface.text-2 > div.background {
     background: url(${url}) no-repeat 50% 50% / cover !important;
     animation: none !important;
-  }
+    transition: none !important;
+    transform: none !important;
+}
   #app > div.interface.text-2 > div.background > div.pattern-bg,
   #app > div.interface.text-2 > div.background > div.bg-radial {
     display: none !important;
   }`;
-  backgroundCssKey && mainWindow.webContents.removeInsertedCSS(backgroundCssKey).catch(() => {});
+  backgroundCssKey && mainWindow.webContents.removeInsertedCSS(backgroundCssKey).catch(() => { });
   mainWindow.webContents.insertCSS(css, { cssOrigin: 'author' })
     .then(key => {
       backgroundCssKey = key;
-      saveBackground(url, true);
+      saveSettings({ background: url, backgroundEnabled: true });
     })
     .catch(err => console.error('Error injecting background:', err));
 }
 
 async function removeCSS() {
-  if (mainWindow?.isDestroyed() || !cssKey) return;
-  try {
-    await mainWindow.webContents.removeInsertedCSS(cssKey);
+  if (cssKey) {
+    await mainWindow.webContents.removeInsertedCSS(cssKey).catch(() => { });
     cssKey = null;
-    await saveCSS('', false);
-  } catch (err) {
-    console.error('Error removing CSS:', err);
+    await saveSettings({ css: '', cssEnabled: false, cssLink: '' });
   }
 }
 
 async function removeBackgroundCSS() {
-  if (mainWindow?.isDestroyed() || !backgroundCssKey) return;
-  try {
-    await mainWindow.webContents.removeInsertedCSS(backgroundCssKey);
+  if (backgroundCssKey) {
+    await mainWindow.webContents.removeInsertedCSS(backgroundCssKey).catch(() => { });
     backgroundCssKey = null;
-    await saveBackground('', false);
-  } catch (err) {
-    console.error('Error removing background:', err);
+    await saveSettings({ background: '', backgroundEnabled: false });
   }
 }
 
-ipcMain.on('close-menu', () => clientMenu?.isDestroyed() === false && clientMenu.close());
+ipcMain.on('get-scripts-path', e => e.returnValue = scriptsPath);
+ipcMain.on('get-loaded-scripts', async e => {
+  try {
+    e.returnValue = (await fs.readdir(scriptsPath)).filter(f => f.endsWith('.js'));
+  } catch (err) {
+    console.error('Error reading scripts folder:', err);
+    e.returnValue = [];
+  }
+});
+ipcMain.on('set-preloaded-scripts', (_, scripts) => {
+  preloadedScripts = scripts;
+  saveSettings({ preloadedScripts: scripts });
+});
+ipcMain.on('get-preloaded-scripts', e => e.returnValue = preloadedScripts);
+ipcMain.on('close-menu', () => clientMenu?.close());
 ipcMain.on('inject-css', (_, css) => injectCSS(css));
 ipcMain.on('inject-css-from-url', (_, url) => fetchAndInjectCSS(url));
 ipcMain.on('remove-css', removeCSS);
 ipcMain.on('inject-background', (_, url) => injectBackgroundCSS(url));
 ipcMain.on('remove-background', removeBackgroundCSS);
 ipcMain.on('set-dev-tools', async (_, enabled) => {
-  if (mainWindow?.isDestroyed()) return;
   devToolsEnabled = enabled;
-  await saveSettings({ devToolsEnabled });
+  await saveSettings({ devToolsEnabled: enabled });
 });
 ipcMain.on('set-menu-toggle-key', async (_, key) => {
-  if (mainWindow?.isDestroyed()) return;
   menuToggleKey = key;
   await saveSettings({ menuToggleKey: key });
 });
 ipcMain.on('open-scripts-folder', async () => {
+  await ensureFolders();
+  await shell.openPath(scriptsPath).catch(err => console.error('Error opening scripts folder:', err));
+});
+ipcMain.on('get-all-scripts', async e => {
   try {
-    await ensureScriptsFolder();
-    await shell.openPath(scriptsPath);
+    e.returnValue = (await fs.readdir(scriptsPath)).filter(f => f.endsWith('.js'));
   } catch (err) {
-    console.error('Error opening scripts folder:', err);
+    console.error('Error reading all scripts:', err);
+    e.returnValue = [];
   }
 });
-
+ipcMain.on('toggle-script', async (_, script, enabled) => {
+  try {
+    const settings = await loadSettings();
+    if (!settings.disabledScripts) settings.disabledScripts = [];
+    if (enabled) {
+      settings.disabledScripts = settings.disabledScripts.filter(s => s !== script);
+    } else {
+      if (!settings.disabledScripts.includes(script)) settings.disabledScripts.push(script);
+    }
+    await saveSettings({ disabledScripts: settings.disabledScripts });
+  } catch (err) {
+    console.error('Error toggling script:', err);
+  }
+});
+ipcMain.on('reload-main-window', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.reload();
+  }
+});
+ipcMain.on('get-user-data-path', e => e.returnValue = userData);
+ipcMain.on('save-settings', async (_, settings) => {
+  await saveSettings(settings);
+});
+ipcMain.on('get-settings', e => e.returnValue = settingsCache);
+ipcMain.on('inject-general-css', (_, css) => injectGeneralCSS(css));
+ipcMain.on('reset-general-settings', async (_, settings) => {
+  await saveSettings(settings);
+});
 setInterval(() => global.gc && global.gc(), 60000);
