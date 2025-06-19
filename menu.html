@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <title>Obsidian Client Menu</title>
@@ -10,6 +11,8 @@
       --primary-dark: #7058e0;
       --text-color: #fff;
       --active-item: rgba(157, 132, 255, 0.5);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --hover-bg: rgba(255, 255, 255, 0.05);
     }
 
     body {
@@ -140,7 +143,7 @@
     .content-panel h2 {
       margin: 0 0 16px;
       color: var(--primary);
-      font: 600 18px/1 system-ui;
+      font: 600 1 8px/1 system-ui;
       border-bottom: 1px solid var(--glass-border);
       padding-bottom: 8px;
     }
@@ -321,7 +324,7 @@
       display: block;
       margin-bottom: 5px;
       font: 13px system-ui;
-      color: var(--secondary);
+      color: var(--text-color);
     }
 
     .css-editor-header {
@@ -332,8 +335,8 @@
     }
 
     .css-editor-title {
-      font{Hz:1st}font: 500 14px system-ui;
-      color: var(--secondary);
+      font: 500 14px system-ui;
+      color: var(--text-color);
     }
 
     .key-bind-button {
@@ -353,7 +356,7 @@
 
     .key-display {
       font: 12px system-ui;
-      color: var(--secondary);
+      color: var(--text-color);
       margin-left: 10px;
     }
 
@@ -376,8 +379,89 @@
     .arrow-icon.hidden {
       display: none;
     }
+
+    .select-container {
+      width: 200px;
+    }
+
+    .select-container select {
+      width: 100%;
+      padding: 8px;
+      background: rgba(10, 5, 20, 0.8);
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      color: var(--text-color);
+      font: 12px system-ui;
+      cursor: pointer;
+      transition: border 0.3s;
+    }
+
+    .select-container select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .css-gallery-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(10, 5, 20, 0.8);
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      margin-top: 12px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .css-gallery-bar:hover {
+      background: rgba(20, 10, 30, 0.8);
+    }
+
+    .css-gallery-text {
+      font: 13px system-ui;
+      color: var(--text-color);
+    }
+
+    .css-gallery-icon {
+      color: var(--primary);
+      font-size: 16px;
+    }
+
+    .kch-css-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(10, 5, 20, 0.8);
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      margin-top: 8px;
+      font: 13px system-ui;
+      color: var(--text-color);
+    }
+
+    .kch-css-bar.hidden {
+      display: none;
+    }
+
+    .kch-css-remove {
+      padding: 6px 12px;
+      background: var(--primary-dark);
+      border: 1px solid var(--glass-border);
+      border-radius: 4px;
+      color: var(--text-color);
+      font: 12px system-ui;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .kch-css-remove:hover {
+      background: var(--primary);
+    }
   </style>
 </head>
+
 <body>
   <div id="client-menu">
     <div class="sidebar">
@@ -413,8 +497,6 @@
           <span class="option-label">Saturation</span>
           <div class="range-slider">
             <input type="range" id="saturation-slider" min="0" max="3" value="1" step="0.01">
-
-
             <span class="range-value" id="saturation-value">1</span>
           </div>
         </div>
@@ -464,6 +546,14 @@
           <label class="input-label">Background Image URL</label>
           <input type="text" id="background-input" placeholder="https://example.com/background.jpg">
         </div>
+        <div class="css-gallery-bar" id="css-gallery-bar">
+          <span class="css-gallery-text">KCH CSS Gallery</span>
+          <i class="fas fa-plus css-gallery-icon"></i>
+        </div>
+        <div class="kch-css-bar hidden" id="kch-css-bar">
+          <span class="kch-css-text">Applied KCH CSS: <span id="kch-css-title">None</span></span>
+          <button class="kch-css-remove" id="kch-css-remove">Remove</button>
+        </div>
         <div class="css-link-input">
           <label class="input-label">CSS File URL</label>
           <input type="text" id="css-link-input" placeholder="https://example.com/style.css">
@@ -502,6 +592,15 @@
             <span class="key-display" id="key-display">ShiftRight</span>
           </div>
         </div>
+        <div class="option-item">
+          <span>Startup Behaviour</span>
+          <div class="select-container">
+            <select id="startup-behaviour">
+              <option value="windowed">Windowed</option>
+              <option value="fullscreen">Full Screen</option>
+            </select>
+          </div>
+        </div>
       </div>
       <div class="content-panel" id="about-panel">
         <h2>About Obsidian Client</h2>
@@ -524,151 +623,115 @@
       openScriptsFolder: document.getElementById('open-scripts-folder'),
       scriptCount: document.getElementById('loaded-scripts-count'),
       scriptsContainer: document.getElementById('scripts-list-container'),
-      brightnessSlider: document.getElementById('brightness-slider'),
-      brightnessValue: document.getElementById('brightness-value'),
-      contrastSlider: document.getElementById('contrast-slider'),
-      contrastValue: document.getElementById('contrast-value'),
-      saturationSlider: document.getElementById('saturation-slider'),
-      saturationValue: document.getElementById('saturation-value'),
-      grayscaleSlider: document.getElementById('grayscale-slider'),
-      grayscaleValue: document.getElementById('grayscale-value'),
-      hueSlider: document.getElementById('hue-slider'),
-      hueValue: document.getElementById('hue-value'),
+      sliders: {
+        brightness: { slider: document.getElementById('brightness-slider'), value: document.getElementById('brightness-value'), unit: '%' },
+        contrast: { slider: document.getElementById('contrast-slider'), value: document.getElementById('contrast-value') },
+        saturation: { slider: document.getElementById('saturation-slider'), value: document.getElementById('saturation-value') },
+        grayscale: { slider: document.getElementById('grayscale-slider'), value: document.getElementById('grayscale-value') },
+        hue: { slider: document.getElementById('hue-slider'), value: document.getElementById('hue-value') },
+        sepia: { slider: document.getElementById('sepia-slider'), value: document.getElementById('sepia-value') },
+      },
       invertToggle: document.getElementById('invert-toggle'),
-      sepiaSlider: document.getElementById('sepia-slider'),
-      sepiaValue: document.getElementById('sepia-value'),
       resetButton: document.getElementById('reset-settings'),
+      startupBehaviour: document.getElementById('startup-behaviour'),
+      kchCSSBar: document.getElementById('kch-css-bar'),
+      kchCSSTitle: document.getElementById('kch-css-title'),
+      kchCSSRemove: document.getElementById('kch-css-remove'),
     };
 
-    function debounce(fn, ms) {
+    const debounce = (fn, ms) => {
       let timeout;
-      return (...args) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => fn(...args), ms);
-      };
-    }
+      return (...args) => (clearTimeout(timeout), timeout = setTimeout(() => fn(...args), ms));
+    };
 
-    function loadSettings() {
+    const applyGeneralSettings = () => {
+      const { brightness, contrast, saturation, grayscale, hue, sepia } = Object.entries(els.sliders).reduce((acc, [k, { slider: { value } }]) => ({ ...acc, [k]: value }), {});
+      const css = `body, html { filter: brightness(${brightness}%) contrast(${contrast}) saturate(${saturation}) grayscale(${grayscale}) hue-rotate(${hue}deg) invert(${els.invertToggle.checked ? 1 : 0}) sepia(${sepia}); }`;
+      window.obsidianClient.injectGeneralCSS(css);
+    };
+
+    const resetSettings = () => {
+      const defaults = { brightness: '100', contrast: '1', saturation: '1', grayscale: '0', hue: '0', sepia: '0', invert: false };
+      Object.entries(defaults).forEach(([k, v]) => {
+        if (k === 'invert') els.invertToggle.checked = v;
+        else {
+          els.sliders[k].slider.value = v;
+          els.sliders[k].value.textContent = v + (els.sliders[k].unit || '');
+        }
+      });
+      window.obsidianClient.resetGeneralSettings(defaults);
+      applyGeneralSettings();
+    };
+
+    const applyCSS = () => {
+      const settings = window.obsidianClient.getSettings();
+      if (settings.kchCSS && settings.kchCSSTitle) {
+        els.cssToggle.checked = false;
+        window.obsidianClient.saveSettings({ cssEnabled: false });
+      } else if (els.cssToggle.checked) {
+        if (els.cssLink.value.trim()) {
+          window.obsidianClient.injectCSSFromURL(els.cssLink.value);
+        } else if (els.cssEditor.value.trim()) {
+          window.obsidianClient.injectCSS(els.cssEditor.value);
+        } else {
+          window.obsidianClient.removeCSS();
+        }
+      } else {
+        window.obsidianClient.removeCSS();
+      }
+    };
+
+    const applyBackground = () => {
+      if (els.background.value.trim()) {
+        window.obsidianClient.injectBackground(els.background.value);
+      } else {
+        window.obsidianClient.removeBackground();
+      }
+    };
+
+    const loadScriptsList = () => {
+      const allScripts = window.obsidianClient.getAllScripts();
+      const disabledScripts = window.obsidianClient.getDisabledScripts();
+      els.scriptCount.textContent = allScripts.filter(s => !disabledScripts.includes(s)).length;
+      els.scriptsContainer.innerHTML = allScripts.length ? allScripts.map(s => `<div class="option-item"><span>${s.replace('.js', '')}</span><label class="toggle"><input type="checkbox" class="script-toggle" data-script="${s}" ${!disabledScripts.includes(s) ? 'checked' : ''}><span class="slider"></span></label></div>`).join('') : '<div style="padding: 10px 0; color: rgba(255,255,255,0.6); font-size: 13px;">No scripts found</div>';
+      document.querySelectorAll('.script-toggle').forEach(t => t.addEventListener('change', e => {
+        window.obsidianClient.toggleScript(e.target.dataset.script, e.target.checked);
+        setTimeout(() => {
+          els.scriptCount.textContent = window.obsidianClient.getAllScripts().filter(s => !window.obsidianClient.getDisabledScripts().includes(s)).length;
+          window.obsidianClient.closeMenu();
+          window.obsidianClient.reloadMainWindow();
+        }, 200);
+      }));
+    };
+
+    const loadSettings = () => {
       const settings = window.obsidianClient.getSettings();
       els.cssToggle.checked = settings.cssEnabled || false;
       els.cssLink.value = settings.cssLink || '';
       els.cssEditor.value = settings.css || '';
       els.background.value = settings.background || '';
-      els.devTools.checked = settings.devTools || false;
-      els.brightnessSlider.value = settings.brightness || '100';
-      els.brightnessValue.textContent = `${els.brightnessSlider.value}%`;
-      els.contrastSlider.value = settings.contrast || '1';
-      els.contrastValue.textContent = els.contrastSlider.value;
-      els.saturationSlider.value = settings.saturation || '1';
-      els.saturationValue.textContent = els.saturationSlider.value;
-      els.grayscaleSlider.value = settings.grayscale || '0';
-      els.grayscaleValue.textContent = els.grayscaleSlider.value;
-      els.hueSlider.value = settings.hue || '0';
-      els.hueValue.textContent = els.hueSlider.value;
+      els.devTools.checked = settings.devToolsEnabled || false;
+      els.kchCSSTitle.textContent = settings.kchCSSTitle || 'None';
+      els.kchCSSBar.classList.toggle('hidden', !settings.kchCSSTitle);
+      Object.entries(els.sliders).forEach(([k, { slider, value, unit = '' }]) => {
+        slider.value = settings[k] || slider.defaultValue;
+        value.textContent = slider.value + unit;
+      });
       els.invertToggle.checked = settings.invert || false;
-      els.sepiaSlider.value = settings.sepia || '0';
-      els.sepiaValue.textContent = els.sepiaSlider.value;
-      const key = settings.menuToggleKey || 'ShiftRight';
-      els.keyDisp.textContent = key;
+      els.startupBehaviour.value = settings.startupBehaviour || 'windowed';
+      els.keyDisp.textContent = settings.menuToggleKey || 'ShiftRight';
       window.obsidianClient.setDevTools(els.devTools.checked);
-      window.obsidianClient.setMenuToggleKey(key);
-      if (els.cssToggle.checked) applyCSS();
-      if (els.background.value.trim()) applyBackground();
+      window.obsidianClient.setMenuToggleKey(els.keyDisp.textContent);
       applyGeneralSettings();
+      applyBackground();
       loadScriptsList();
-    }
+    };
 
-    function applyCSS() {
-      if (!els.cssToggle.checked) return window.obsidianClient.removeCSS();
-      const link = els.cssLink.value.trim();
-      link ? window.obsidianClient.injectCSSFromURL(link) : els.cssEditor.value.trim() && window.obsidianClient.injectCSS(els.cssEditor.value);
-    }
-
-    function applyBackground() {
-      const url = els.background.value.trim();
-      url ? window.obsidianClient.injectBackground(url) : window.obsidianClient.removeBackground();
-    }
-
-    function applyGeneralSettings() {
-      const brightness = els.brightnessSlider.value;
-      const contrast = els.contrastSlider.value;
-      const saturation = els.saturationSlider.value;
-      const grayscale = els.grayscaleSlider.value;
-      const hue = els.hueSlider.value;
-      const invert = els.invertToggle.checked ? 1 : 0;
-      const sepia = els.sepiaSlider.value;
-
-      const css = `
-        body, html {
-          filter: brightness(${brightness}%) contrast(${contrast}) saturate(${saturation}) grayscale(${grayscale}) hue-rotate(${hue}deg) invert(${invert}) sepia(${sepia});
-        }
-      `;
-      window.obsidianClient.injectGeneralCSS(css);
-    }
-
-    function resetSettings() {
-      els.brightnessSlider.value = '100';
-      els.brightnessValue.textContent = '100%';
-      els.contrastSlider.value = '1';
-      els.contrastValue.textContent = '1';
-      els.saturationSlider.value = '1';
-      els.saturationValue.textContent = '1';
-      els.grayscaleSlider.value = '0';
-      els.grayscaleValue.textContent = '0';
-      els.hueSlider.value = '0';
-      els.hueValue.textContent = '0';
-      els.invertToggle.checked = false;
-      els.sepiaSlider.value = '0';
-      els.sepiaValue.textContent = '0';
-      window.obsidianClient.resetGeneralSettings({
-        brightness: '100',
-        contrast: '1',
-        saturation: '1',
-        grayscale: '0',
-        hue: '0',
-        invert: false,
-        sepia: '0'
-      });
-      applyGeneralSettings();
-    }
-
-    function loadScriptsList() {
-      const allScripts = window.obsidianClient.getAllScripts();
-      const preloadedScripts = window.obsidianClient.getPreloadedScripts();
-
-      els.scriptCount.textContent = preloadedScripts.length;
-
-      if (allScripts.length === 0) {
-        els.scriptsContainer.innerHTML = '<div style="padding: 10px 0; color: rgba(255,255,255,0.6); font-size: 13px;">No scripts found</div>';
-        return;
-      }
-
-      els.scriptsContainer.innerHTML = allScripts.map(script => {
-        const scriptName = script.replace('.js', '');
-        const isEnabled = preloadedScripts.includes(script);
-        return `
-      <div class="option-item">
-        <span>${scriptName}</span>
-        <label class="toggle">
-          <input type="checkbox" class="script-toggle" data-script="${script}" ${isEnabled ? 'checked' : ''}>
-          <span class="slider"></span>
-        </label>
-      </div>
-    `;
-      }).join('');
-
-      document.querySelectorAll('.script-toggle').forEach(toggle => {
-        toggle.addEventListener('change', (e) => {
-          const script = e.target.dataset.script;
-          const isEnabled = e.target.checked;
-          window.obsidianClient.toggleScript(script, isEnabled);
-          setTimeout(() => {
-            window.obsidianClient.closeMenu();
-            window.obsidianClient.reloadMainWindow();
-          }, 100);
-        });
-      });
-    }
+    els.devTools.addEventListener('change', () => {
+      const enabled = els.devTools.checked;
+      window.obsidianClient.setDevTools(enabled);
+      window.obsidianClient.saveSettings({ devToolsEnabled: enabled });
+    });
 
     els.cssToggle.addEventListener('change', () => {
       window.obsidianClient.saveSettings({ cssEnabled: els.cssToggle.checked });
@@ -677,12 +740,18 @@
 
     els.cssEditor.addEventListener('input', debounce(() => {
       window.obsidianClient.saveSettings({ css: els.cssEditor.value });
-      if (els.cssToggle.checked && !els.cssLink.value.trim()) window.obsidianClient.injectCSS(els.cssEditor.value);
+      const settings = window.obsidianClient.getSettings();
+      if (!settings.kchCSS && els.cssToggle.checked && !els.cssLink.value.trim()) {
+        window.obsidianClient.injectCSS(els.cssEditor.value);
+      }
     }, 100));
 
     els.cssLink.addEventListener('input', debounce(() => {
       window.obsidianClient.saveSettings({ cssLink: els.cssLink.value });
-      if (els.cssToggle.checked) applyCSS();
+      const settings = window.obsidianClient.getSettings();
+      if (!settings.kchCSS && els.cssToggle.checked) {
+        applyCSS();
+      }
     }, 100));
 
     els.background.addEventListener('input', debounce(() => {
@@ -690,55 +759,28 @@
       applyBackground();
     }, 100));
 
-    els.devTools.addEventListener('change', () => {
-      window.obsidianClient.setDevTools(els.devTools.checked);
-      window.obsidianClient.saveSettings({ devTools: els.devTools.checked });
-    });
-
-    els.brightnessSlider.addEventListener('input', () => {
-      els.brightnessValue.textContent = `${els.brightnessSlider.value}%`;
-      window.obsidianClient.saveSettings({ brightness: els.brightnessSlider.value });
+    Object.values(els.sliders).forEach(({ slider, value, unit = '' }) => slider.addEventListener('input', () => {
+      value.textContent = slider.value + unit;
+      window.obsidianClient.saveSettings({ [slider.id.split('-')[0]]: slider.value });
       applyGeneralSettings();
-    });
-
-    els.contrastSlider.addEventListener('input', () => {
-      els.contrastValue.textContent = els.contrastSlider.value;
-      window.obsidianClient.saveSettings({ contrast: els.contrastSlider.value });
-      applyGeneralSettings();
-    });
-
-    els.saturationSlider.addEventListener('input', () => {
-      els.saturationValue.textContent = els.saturationSlider.value;
-      window.obsidianClient.saveSettings({ saturation: els.saturationSlider.value });
-      applyGeneralSettings();
-    });
-
-    els.grayscaleSlider.addEventListener('input', () => {
-      els.grayscaleValue.textContent = els.grayscaleSlider.value;
-      window.obsidianClient.saveSettings({ grayscale: els.grayscaleSlider.value });
-      applyGeneralSettings();
-    });
-
-    els.hueSlider.addEventListener('input', () => {
-      els.hueValue.textContent = els.hueSlider.value;
-      window.obsidianClient.saveSettings({ hue: els.hueSlider.value });
-      applyGeneralSettings();
-    });
+    }));
 
     els.invertToggle.addEventListener('change', () => {
       window.obsidianClient.saveSettings({ invert: els.invertToggle.checked });
       applyGeneralSettings();
     });
 
-    els.sepiaSlider.addEventListener('input', () => {
-      els.sepiaValue.textContent = els.sepiaSlider.value;
-      window.obsidianClient.saveSettings({ sepia: els.sepiaSlider.value });
-      applyGeneralSettings();
-    });
-
     els.resetButton.addEventListener('click', resetSettings);
-
     els.openScriptsFolder.addEventListener('click', () => window.obsidianClient.openScriptsFolder());
+    els.startupBehaviour.addEventListener('change', () => window.obsidianClient.saveSettings({ startupBehaviour: els.startupBehaviour.value }));
+
+    els.kchCSSRemove.addEventListener('click', () => {
+      window.obsidianClient.removeKCHCSS();
+      els.kchCSSTitle.textContent = 'None';
+      els.kchCSSBar.classList.add('hidden');
+      applyCSS();
+      window.obsidianClient.reloadMainWindow();
+    });
 
     let settingKey = false;
     els.keyBtn.addEventListener('click', () => {
@@ -750,25 +792,28 @@
       if (e.code === els.keyDisp.textContent) window.obsidianClient.closeMenu();
       if (settingKey) {
         e.preventDefault();
-        const key = e.code;
-        window.obsidianClient.setMenuToggleKey(key);
-        els.keyDisp.textContent = key;
+        els.keyDisp.textContent = e.code;
+        window.obsidianClient.setMenuToggleKey(e.code);
         els.keyBtn.textContent = 'Set Key';
         settingKey = false;
       }
     });
 
-    document.querySelectorAll('.menu-item').forEach(item => {
-      item.addEventListener('click', () => {
-        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-        document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
-        item.classList.add('active');
-        document.getElementById(`${item.dataset.tab}-panel`)?.classList.add('active');
-        if (item.dataset.tab === 'scripts') loadScriptsList();
-      });
+    els.cssGallery = document.getElementById('css-gallery-bar');
+    els.cssGallery.addEventListener('click', () => {
+      window.obsidianClient.openCSSGallery();
     });
+
+    document.querySelectorAll('.menu-item').forEach(item => item.addEventListener('click', () => {
+      document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+      document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+      item.classList.add('active');
+      document.getElementById(`${item.dataset.tab}-panel`)?.classList.add('active');
+      item.dataset.tab === 'scripts' && loadScriptsList();
+    }));
 
     loadSettings();
   </script>
 </body>
+
 </html>
