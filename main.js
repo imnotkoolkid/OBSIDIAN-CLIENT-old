@@ -44,7 +44,12 @@ const saveSettings = settings => {
   settingsWriteTimer = setTimeout(() => fs.writeFile(paths.settings, JSON.stringify(settingsCache))
     .catch(err => console.error('Error saving settings:', err)), 500);
 };
+function applySwitches() {
+  app.commandLine.appendSwitch("disable-frame-rate-limit");
+  app.allowRendererProcessReuse = true;
+}
 
+applySwitches();
 const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 1180, height: 680, minWidth: 880, minHeight: 580,
