@@ -7,16 +7,15 @@
     "start": "electron .",
     "build": "electron-builder"
   },
-  "author": "imnotkoolkid, Akuma",
+  "author": "imnotkoolkid , Akuma",
   "license": "MIT",
   "devDependencies": {
     "electron": "^28.1.0",
-    "electron-builder": "^23.0.2"
+    "electron-builder": "^24.9.1"
   },
-
   "build": {
     "appId": "com.obsidian.client",
-    "productName": "Obsidian Client",
+    "productName": "Obsidian Client (pre release)",
     "directories": {
       "output": "dist"
     },
