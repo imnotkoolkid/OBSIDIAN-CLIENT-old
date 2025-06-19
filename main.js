@@ -1,34 +1,39 @@
 const { app, BrowserWindow, Menu, ipcMain, shell, dialog } = require('electron');
 const { promises: fs } = require('fs');
 const path = require('path');
-const { get: fetch } = require('https');
+const { get: httpsGet } = require('https');
+const { initRPC } = require('./assets/rpc.js');
 
 const userData = app.getPath('userData');
 const documentsPath = app.getPath('documents');
 const clientSettingsPath = path.join(documentsPath, 'ObsidianClient', 'clientSettings');
 const scriptsPath = path.join(documentsPath, 'ObsidianClient', 'scripts');
+
 const paths = {
   settings: path.join(clientSettingsPath, 'settings.dat'),
   defaultSettings: path.join(__dirname, 'default_settings.json'),
 };
 
-let mainWindow, splashWindow, clientMenu, cssKeys = {}, settingsCache, settingsWriteTimer;
+let mainWindow, splashWindow, clientMenu;
+let cssKeys = {}, settingsCache, settingsWriteTimer;
 let menuToggleKey = 'ShiftRight', devToolsEnabled = false, preloadedScripts = [], startupBehaviour = 'windowed';
 
-const ensureFolders = () => fs.mkdir(clientSettingsPath, { recursive: true })
-  .then(() => fs.mkdir(scriptsPath, { recursive: true }))
-  .catch(err => console.error('Error creating folders:', err));
+const ensureFolders = () =>
+  fs.mkdir(clientSettingsPath, { recursive: true })
+    .then(() => fs.mkdir(scriptsPath, { recursive: true }))
+    .catch(err => console.error('Error creating folders:', err));
 
 const loadSettings = async () => {
   if (settingsCache) return settingsCache;
   try {
-    const settingsExist = await fs.access(paths.settings).then(() => true).catch(() => false);
-    if (!settingsExist) {
+    const exists = await fs.access(paths.settings).then(() => true).catch(() => false);
+    if (!exists) {
       settingsCache = JSON.parse(await fs.readFile(paths.defaultSettings, 'utf8'));
       await fs.writeFile(paths.settings, JSON.stringify(settingsCache));
     } else {
       settingsCache = JSON.parse(await fs.readFile(paths.settings, 'utf8')) || {};
     }
+
     ({ devToolsEnabled = false, menuToggleKey = 'ShiftRight', preloadedScripts = [], startupBehaviour = 'windowed', disabledScripts = [] } = settingsCache);
     return settingsCache;
   } catch (err) {
@@ -41,8 +46,8 @@ const saveSettings = settings => {
   settingsCache = { ...settingsCache, ...settings };
   Object.assign({ devToolsEnabled, menuToggleKey, preloadedScripts, startupBehaviour }, settings);
   clearTimeout(settingsWriteTimer);
-  settingsWriteTimer = setTimeout(() => fs.writeFile(paths.settings, JSON.stringify(settingsCache))
-    .catch(err => console.error('Error saving settings:', err)), 500);
+  settingsWriteTimer = setTimeout(() =>
+    fs.writeFile(paths.settings, JSON.stringify(settingsCache)).catch(err => console.error('Error saving settings:', err)), 500);
 };
 
 const createSplashWindow = () => {
@@ -62,31 +67,49 @@ const createSplashWindow = () => {
 
 const createWindow = () => {
   mainWindow = new BrowserWindow({
-    width: 1180, height: 680, minWidth: 880, minHeight: 580,
+    width: 1180,
+    height: 680,
+    minWidth: 880,
+    minHeight: 580,
     title: "Obsidian Client (pre release)",
     icon: path.join(__dirname, 'assets', 'Obsidian Client.ico'),
-    webPreferences: { nodeIntegration: true, contextIsolation: false, preload: path.join(__dirname, 'scriptsPreload.js'), devTools: true },
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      preload: path.join(__dirname, 'scriptsPreload.js'),
+      devTools: true
+    },
     fullscreen: startupBehaviour === 'fullscreen',
-    show: false 
+    show: false
   });
 
   mainWindow.webContents.setUserAgent(
     `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.116 Safari/537.36 Electron/10.4.7 JuiceClient/${app.getVersion()}`
   );
 
-  mainWindow.loadURL('https://kirka.io/');
   Menu.setApplicationMenu(null);
+  mainWindow.loadURL('https://kirka.io/');
 
-  mainWindow.on('page-title-updated', e => e.preventDefault());
+  mainWindow.webContents.on('did-finish-load', () => {
+    splashWindow?.webContents.send('update-progress', 25);
+    injectRouteChangeNotifier();
+    applyConfig();
+    if (splashWindow && !splashWindow.isDestroyed()) splashWindow.close();
+  mainWindow.show();
+    setTimeout(() => initRPC(mainWindow), 1000); // Ensure DOM ready before RPC
+    console.log('[Window] Loaded successfully.');
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
-    clientMenu?.isDestroyed() || clientMenu?.close();
+    if (!clientMenu?.isDestroyed()) clientMenu.close();
   });
 
+  mainWindow.on('page-title-updated', e => e.preventDefault());
+
   mainWindow.webContents.on('will-navigate', (event, url) => {
-    const currentURL = mainWindow.webContents.getURL();
-    if (url !== currentURL && !url.startsWith('https://kirka.io')) {
+    const current = mainWindow.webContents.getURL();
+    if (url !== current && !url.startsWith('https://kirka.io')) {
       event.preventDefault();
       openInPopup(url);
     }
@@ -97,62 +120,7 @@ const createWindow = () => {
     openInPopup(url);
   });
 
-  function openInPopup(url) {
-    const popup = new BrowserWindow({
-      width: 900,
-      height: 600,
-      parent: mainWindow,
-      modal: false,
-      show: true,
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true,
-        session: mainWindow.webContents.session,
-      },
-    });
-
-    popup.loadURL(url);
-
-    popup.webContents.on('did-navigate', (_, navigatedUrl) => {
-      if (navigatedUrl.startsWith('https://kirka.io')) {
-        const urlObj = new URL(navigatedUrl);
-        if (urlObj.searchParams.has('code') || urlObj.searchParams.has('token')) {
-          setTimeout(() => {
-            if (!popup.isDestroyed()) popup.close();
-            if (!mainWindow.isDestroyed()) mainWindow.loadURL('https://kirka.io/');
-          }, 3000);
-        }
-      }
-
-      if (
-        navigatedUrl.includes('error_code=010-015') ||
-        navigatedUrl.includes('error_description=rate+limited')
-      ) {
-        dialog.showMessageBox(mainWindow, {
-          type: 'warning',
-          title: 'Login Rate Limit',
-          message: 'You have made too many login attempts. Please wait a while before trying again.',
-        });
-      }
-    });
-
-    popup.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
-      if (validatedURL.startsWith('http://localhost:8080')) {
-        dialog.showMessageBox(mainWindow, {
-          type: 'error',
-          title: 'Login Error',
-          message: 'Login failed due to server error or rate limiting. Please try again later.',
-        });
-      }
-    });
-  }
-
-  let lastInput = 0;
   mainWindow.webContents.on('before-input-event', (e, input) => {
-    const now = Date.now();
-    if (now - lastInput < 50) return;
-    lastInput = now;
-
     if (input.key === 'F11') {
       mainWindow.setFullScreen(!mainWindow.isFullScreen());
       e.preventDefault();
@@ -167,48 +135,79 @@ const createWindow = () => {
       e.preventDefault();
     }
   });
-
-  mainWindow.webContents.on('did-finish-load', () => {
-    splashWindow?.webContents.send('update-progress', 25); 
-    applyConfig();
-  });
 };
 
-app.whenReady().then(async () => {
-  createSplashWindow();
-  await Promise.all([ensureFolders(), loadSettings()]);
-  splashWindow.webContents.send('update-progress', 25); 
-  createWindow();
-});
+function injectRouteChangeNotifier() {
+  mainWindow.webContents.executeJavaScript(`
+    (() => {
+      const { ipcRenderer } = require('electron');
+      let lastURL = location.href;
+      const notifyURLChange = () => {
+        if (location.href !== lastURL) {
+          lastURL = location.href;
+          ipcRenderer.send('url-changed', lastURL);
+        }
+      };
+      const pushState = history.pushState;
+      history.pushState = function(...args) {
+        pushState.apply(this, args);
+        notifyURLChange();
+      };
+      const replaceState = history.replaceState;
+      history.replaceState = function(...args) {
+        replaceState.apply(this, args);
+        notifyURLChange();
+      };
+      window.addEventListener('popstate', notifyURLChange);
+    })();
+  `).catch(console.error);
+}
 
-app.on('window-all-closed', () => process.platform !== 'darwin' && app.quit());
-app.on('activate', () => !BrowserWindow.getAllWindows().length && createSplashWindow() && createWindow());
-
-ipcMain.on('splash-complete', () => {
-  if (!splashWindow.isDestroyed()) splashWindow.close();
-  if (!mainWindow.isDestroyed()) mainWindow.show();
-});
-
-const toggleClientMenu = () => {
-  if (clientMenu?.isDestroyed() === false) return clientMenu.close();
-
-  const { x, y, width, height } = mainWindow.getBounds();
-  clientMenu = new BrowserWindow({
-    width: 700, height: 500, parent: mainWindow, modal: false, frame: false, transparent: true, resizable: false,
-    x: Math.round(x + (width - 700) / 2), y: Math.round(y + (height - 500) / 2),
-    webPreferences: { nodeIntegration: false, contextIsolation: true, preload: path.join(__dirname, 'preload.js'), javascript: true, images: false },
+function openInPopup(url) {
+  const popup = new BrowserWindow({
+    width: 900,
+    height: 600,
+    parent: mainWindow,
+    modal: false,
+    show: true,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      session: mainWindow.webContents.session,
+    },
   });
 
-  clientMenu.loadFile('menu.html');
-  const updatePosition = () => clientMenu?.isDestroyed() || clientMenu.setPosition(...mainWindow.getBounds().slice(0, 2).map((v, i) => Math.round(v + (mainWindow.getBounds()[i + 2] - [700, 500][i]) / 2)));
-  mainWindow.on('move', updatePosition);
-  clientMenu.on('closed', () => mainWindow.removeListener('move', updatePosition));
-  clientMenu.on('blur', () => clientMenu?.close());
-};
+  popup.loadURL(url);
+
+  popup.webContents.on('did-navigate', (_, navigatedUrl) => {
+    const urlObj = new URL(navigatedUrl);
+    if (urlObj.searchParams.has('code') || urlObj.searchParams.has('token')) {
+      setTimeout(() => {
+        if (!popup.isDestroyed()) popup.close();
+        if (!mainWindow.isDestroyed()) mainWindow.loadURL('https://kirka.io/');
+      }, 2000);
+    }
+
+    if (
+      navigatedUrl.includes('error_code=010-015') ||
+      navigatedUrl.includes('error_description=rate+limited')
+    ) {
+      dialog.showMessageBox(mainWindow, {
+        type: 'warning',
+        title: 'Login Rate Limit',
+        message: 'Too many login attempts. Please wait before trying again.',
+      });
+    }
+  });
+}
 
 const applyConfig = async () => {
   try {
-    const { cssEnabled, cssLink, css, backgroundEnabled, background, brightness = '100', contrast = '1', saturation = '1', grayscale = '0', hue = '0', invert = false, sepia = '0', kchCSS, kchCSSTitle } = await loadSettings();
+    const {
+      cssEnabled, cssLink, css, backgroundEnabled, background,
+      brightness = '100', contrast = '1', saturation = '1', grayscale = '0',
+      hue = '0', invert = false, sepia = '0', kchCSS, kchCSSTitle
+    } = await loadSettings();
 
     await injectGeneralCSS(`body, html { filter: brightness(${brightness}%) contrast(${contrast}) saturate(${saturation}) grayscale(${grayscale}) hue-rotate(${hue}deg) invert(${invert ? 1 : 0}) sepia(${sepia}); }`);
 
@@ -225,37 +224,16 @@ const applyConfig = async () => {
     }
 
     if (cssEnabled && !kchCSS) {
-      if (cssLink) {
-        await injectCSS(null, cssLink);
-      } else if (css) {
-        await injectCSS(css);
-      } else {
-        await removeCSS('css');
-      }
+      if (cssLink) await injectCSS(null, cssLink);
+      else if (css) await injectCSS(css);
+      else await removeCSS('css');
     } else if (!kchCSS) {
       await removeCSS('css');
     }
 
-    splashWindow?.webContents.send('update-progress', 25); 
     await loadScripts();
   } catch (err) {
     console.error('Error applying config:', err);
-  }
-};
-
-const loadScripts = async () => {
-  try {
-    const disabledScripts = settingsCache.disabledScripts || [];
-    const scripts = await fs.readdir(scriptsPath).then(files => files.filter(f => f.endsWith('.js')));
-    for (const script of scripts) {
-      if (!disabledScripts.includes(script)) {
-        require(path.join(scriptsPath, script));
-      }
-    }
-    splashWindow?.webContents.send('update-progress', 25);
-  } catch (err) {
-    console.error('Error loading scripts:', err);
-    splashWindow?.webContents.send('update-progress', 25); 
   }
 };
 
@@ -263,72 +241,66 @@ const injectCSS = async (css, url) => {
   if (url) {
     try {
       css = await new Promise((resolve, reject) => {
-        fetch(url, { headers: { 'Cache-Control': 'no-cache' } })
-          .on('response', res => {
-            if (res.statusCode !== 200) return resolve('');
-            let data = '';
-            res.setEncoding('utf8').on('data', chunk => data += chunk).on('end', () => resolve(data));
-          })
-          .on('error', reject)
-          .end();
+        httpsGet(url, res => {
+          if (res.statusCode !== 200) return resolve('');
+          let data = '';
+          res.on('data', chunk => data += chunk);
+          res.on('end', () => resolve(data));
+        }).on('error', reject);
       });
-      if (!css) return console.error(`Failed to load CSS from ${url}`);
+      if (!css) return console.error(`Failed to fetch CSS from ${url}`);
       await saveSettings({ css, cssEnabled: true, cssLink: url });
     } catch (err) {
-      return console.error('Error fetching CSS:', err);
+      return console.error('Fetch error:', err);
     }
   }
-  cssKeys.css && await mainWindow.webContents.removeInsertedCSS(cssKeys.css).catch(() => { });
+  if (cssKeys.css) await mainWindow.webContents.removeInsertedCSS(cssKeys.css).catch(() => {});
   cssKeys.css = await mainWindow.webContents.insertCSS(css);
-  css && await saveSettings({ css, cssEnabled: true });
 };
 
 const injectKCHCSS = async (url, title) => {
   try {
     const css = await new Promise((resolve, reject) => {
-      fetch(url, { headers: { 'Cache-Control': 'no-cache' } })
-        .on('response', res => {
-          if (res.statusCode !== 200) return resolve('');
-          let data = '';
-          res.setEncoding('utf8').on('data', chunk => data += chunk).on('end', () => resolve(data));
-        })
-        .on('error', reject)
-        .end();
+      httpsGet(url, res => {
+        if (res.statusCode !== 200) return resolve('');
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => resolve(data));
+      }).on('error', reject);
     });
-    if (!css) return console.error(`Failed to load KCH CSS from ${url}`);
-    cssKeys.css && await mainWindow.webContents.removeInsertedCSS(cssKeys.css).catch(() => { });
-    cssKeys.kchCSS && await mainWindow.webContents.removeInsertedCSS(cssKeys.kchCSS).catch(() => { });
+    if (!css) return;
+    if (cssKeys.kchCSS) await mainWindow.webContents.removeInsertedCSS(cssKeys.kchCSS).catch(() => {});
     cssKeys.kchCSS = await mainWindow.webContents.insertCSS(css);
     await saveSettings({ kchCSS: url, kchCSSTitle: title, cssEnabled: false });
-    const { backgroundEnabled, background } = await loadSettings();
-    if (backgroundEnabled && background) {
-      await injectBackgroundCSS(background);
-    }
   } catch (err) {
-    console.error('Error injecting KCH CSS:', err);
+    console.error('Inject KCH CSS failed:', err);
   }
 };
 
-const injectGeneralCSS = async css => {
-  cssKeys.general && await mainWindow.webContents.removeInsertedCSS(cssKeys.general).catch(() => { });
-  cssKeys.general = await mainWindow.webContents.insertCSS(css);
+const injectBackgroundCSS = async (url) => {
+  const css = `#app > div.interface.text-2 > div.background {
+    background: url(${url}) no-repeat 50% 50% / cover !important;
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  #app > div.interface.text-2 > div.background > div.pattern-bg,
+  #app > div.interface.text-2 > div.background > div.bg-radial {
+    display: none !important;
+  }`;
+  if (cssKeys.background) await mainWindow.webContents.removeInsertedCSS(cssKeys.background).catch(() => {});
+  cssKeys.background = await mainWindow.webContents.insertCSS(css);
+  await saveSettings({ background: url, backgroundEnabled: true });
 };
 
-const injectBackgroundCSS = url => {
-  const css = `#app > div.interface.text-2 > div.background { background: url(${url}) no-repeat 50% 50% / cover !important; animation: none !important; transition: none !important; transform: none !important; }
-    #app > div.interface.text-2 > div.background > div.pattern-bg, #app > div.interface.text-2 > div.background > div.bg-radial { display: none !important; }`;
-  cssKeys.background && mainWindow.webContents.removeInsertedCSS(cssKeys.background).catch(() => { });
-  mainWindow.webContents.insertCSS(css, { cssOrigin: 'author' })
-    .then(key => {
-      cssKeys.background = key;
-      saveSettings({ background: url, backgroundEnabled: true });
-    })
-    .catch(err => console.error('Error injecting background:', err));
+const injectGeneralCSS = async css => {
+  if (cssKeys.general) await mainWindow.webContents.removeInsertedCSS(cssKeys.general).catch(() => {});
+  cssKeys.general = await mainWindow.webContents.insertCSS(css);
 };
 
 const removeCSS = async type => {
   if (cssKeys[type]) {
-    await mainWindow.webContents.removeInsertedCSS(cssKeys[type]).catch(() => { });
+    await mainWindow.webContents.removeInsertedCSS(cssKeys[type]).catch(() => {});
     cssKeys[type] = null;
     await saveSettings(type === 'css' ? { cssEnabled: false } : { background: '', backgroundEnabled: false });
   }
@@ -336,11 +308,63 @@ const removeCSS = async type => {
 
 const removeKCHCSS = async () => {
   if (cssKeys.kchCSS) {
-    await mainWindow.webContents.removeInsertedCSS(cssKeys.kchCSS).catch(() => { });
+    await mainWindow.webContents.removeInsertedCSS(cssKeys.kchCSS).catch(() => {});
     cssKeys.kchCSS = null;
     await saveSettings({ kchCSS: '', kchCSSTitle: '' });
   }
 };
+
+const loadScripts = async () => {
+  try {
+    const disabledScripts = settingsCache.disabledScripts || [];
+    const scripts = await fs.readdir(scriptsPath).then(f => f.filter(f => f.endsWith('.js')));
+    for (const script of scripts) {
+      if (!disabledScripts.includes(script)) {
+        require(path.join(scriptsPath, script));
+      }
+    }
+  } catch (err) {
+    console.error('Script loading failed:', err);
+  }
+};
+
+const toggleClientMenu = () => {
+  if (!mainWindow) return;
+  if (clientMenu?.isDestroyed() === false) return clientMenu.close();
+  const { x, y, width, height } = mainWindow.getBounds();
+
+  clientMenu = new BrowserWindow({
+    width: 700, height: 500,
+    x: Math.round(x + (width - 700) / 2),
+    y: Math.round(y + (height - 500) / 2),
+    parent: mainWindow,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
+      javascript: true,
+    }
+  });
+
+  clientMenu.loadFile('menu.html');
+  mainWindow.on('move', () => {
+    if (!clientMenu?.isDestroyed()) {
+      const { x, y, width, height } = mainWindow.getBounds();
+      clientMenu.setPosition(Math.round(x + (width - 700) / 2), Math.round(y + (height - 500) / 2));
+    }
+  });
+
+  clientMenu.on('closed', () => mainWindow.removeAllListeners('move'));
+  clientMenu.on('blur', () => clientMenu.close());
+};
+
+ipcMain.on('splash-complete', () => {
+  if (!splashWindow?.isDestroyed()) splashWindow.close();
+  if (!mainWindow?.isDestroyed()) mainWindow.show();
+});
 
 ipcMain.on('open-css-gallery', () => openCSSGallery());
 ipcMain.on('get-scripts-path', e => e.returnValue = scriptsPath);
@@ -370,22 +394,32 @@ ipcMain.on('reset-general-settings', (_, settings) => saveSettings(settings));
 ipcMain.on('get-disabled-scripts', async e => e.returnValue = (await loadSettings()).disabledScripts || []);
 ipcMain.on('inject-kch-css', (_, url, title) => injectKCHCSS(url, title));
 ipcMain.on('remove-kch-css', () => removeKCHCSS());
+ipcMain.on('splash-complete', () => {
+  if (!splashWindow?.isDestroyed()) splashWindow.close();
+  if (!mainWindow?.isDestroyed()) mainWindow.show();
+});
 
-const openCSSGallery = () => {
-  const cssGalleryWindow = new BrowserWindow({
-    width: 1050,
-    height: 600,
-    title: "KCH CSS Gallery",
-    icon: path.join(__dirname, 'kch/assets/kch.ico'),
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
-    },
+app.whenReady().then(async () => {
+  createSplashWindow();
+
+  await ensureFolders();
+  await loadSettings();
+
+  splashWindow.webContents.once('did-finish-load', () => {
+    splashWindow.webContents.send('update-progress', 25);
+    createWindow();
   });
+});
 
-  cssGalleryWindow.loadFile('kch/css.html');
-  cssGalleryWindow.setMenuBarVisibility(false);
-};
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createSplashWindow();
+    createWindow();
+  }
+});
 
 setInterval(() => global.gc && global.gc(), 60000);
