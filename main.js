@@ -1,18 +1,18 @@
-const { app, BrowserWindow, Menu, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, shell, dialog } = require('electron');
 const { promises: fs } = require('fs');
 const path = require('path');
 const { get: fetch } = require('https');
 
 const userData = app.getPath('userData');
 const documentsPath = app.getPath('documents');
-const clientSettingsPath = path.join(documentsPath, 'ObsidianClient', 'clientsettings');
+const clientSettingsPath = path.join(documentsPath, 'ObsidianClient', 'clientSettings');
 const scriptsPath = path.join(documentsPath, 'ObsidianClient', 'scripts');
 const paths = {
   settings: path.join(clientSettingsPath, 'settings.dat'),
   defaultSettings: path.join(__dirname, 'default_settings.json'),
 };
 
-let mainWindow, clientMenu, cssKeys = {}, settingsCache, settingsWriteTimer;
+let mainWindow, splashWindow, clientMenu, cssKeys = {}, settingsCache, settingsWriteTimer;
 let menuToggleKey = 'ShiftRight', devToolsEnabled = false, preloadedScripts = [], startupBehaviour = 'windowed';
 
 const ensureFolders = () => fs.mkdir(clientSettingsPath, { recursive: true })
@@ -29,7 +29,7 @@ const loadSettings = async () => {
     } else {
       settingsCache = JSON.parse(await fs.readFile(paths.settings, 'utf8')) || {};
     }
-    ({ devToolsEnabled = false, menuToggleKey = 'ShiftRight', preloadedScripts =[], startupBehaviour = 'windowed', disabledScripts =[] } = settingsCache);
+    ({ devToolsEnabled = false, menuToggleKey = 'ShiftRight', preloadedScripts = [], startupBehaviour = 'windowed', disabledScripts = [] } = settingsCache);
     return settingsCache;
   } catch (err) {
     console.error('Error loading settings:', err);
@@ -44,12 +44,22 @@ const saveSettings = settings => {
   settingsWriteTimer = setTimeout(() => fs.writeFile(paths.settings, JSON.stringify(settingsCache))
     .catch(err => console.error('Error saving settings:', err)), 500);
 };
-function applySwitches() {
-  app.commandLine.appendSwitch("disable-frame-rate-limit");
-  app.allowRendererProcessReuse = true;
-}
 
-applySwitches();
+const createSplashWindow = () => {
+  splashWindow = new BrowserWindow({
+    width: 1400,
+    height: 400,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
+  });
+  splashWindow.loadFile('splash.html');
+};
+
 const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 1180, height: 680, minWidth: 880, minHeight: 580,
@@ -57,15 +67,85 @@ const createWindow = () => {
     icon: path.join(__dirname, 'assets', 'Obsidian Client.ico'),
     webPreferences: { nodeIntegration: true, contextIsolation: false, preload: path.join(__dirname, 'scriptsPreload.js'), devTools: true },
     fullscreen: startupBehaviour === 'fullscreen',
+    show: false 
   });
+
+  mainWindow.webContents.setUserAgent(
+    `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.116 Safari/537.36 Electron/10.4.7 JuiceClient/${app.getVersion()}`
+  );
 
   mainWindow.loadURL('https://kirka.io/');
   Menu.setApplicationMenu(null);
+
   mainWindow.on('page-title-updated', e => e.preventDefault());
+
   mainWindow.on('closed', () => {
     mainWindow = null;
     clientMenu?.isDestroyed() || clientMenu?.close();
   });
+
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    const currentURL = mainWindow.webContents.getURL();
+    if (url !== currentURL && !url.startsWith('https://kirka.io')) {
+      event.preventDefault();
+      openInPopup(url);
+    }
+  });
+
+  mainWindow.webContents.on('new-window', (event, url) => {
+    event.preventDefault();
+    openInPopup(url);
+  });
+
+  function openInPopup(url) {
+    const popup = new BrowserWindow({
+      width: 900,
+      height: 600,
+      parent: mainWindow,
+      modal: false,
+      show: true,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        session: mainWindow.webContents.session,
+      },
+    });
+
+    popup.loadURL(url);
+
+    popup.webContents.on('did-navigate', (_, navigatedUrl) => {
+      if (navigatedUrl.startsWith('https://kirka.io')) {
+        const urlObj = new URL(navigatedUrl);
+        if (urlObj.searchParams.has('code') || urlObj.searchParams.has('token')) {
+          setTimeout(() => {
+            if (!popup.isDestroyed()) popup.close();
+            if (!mainWindow.isDestroyed()) mainWindow.loadURL('https://kirka.io/');
+          }, 3000);
+        }
+      }
+
+      if (
+        navigatedUrl.includes('error_code=010-015') ||
+        navigatedUrl.includes('error_description=rate+limited')
+      ) {
+        dialog.showMessageBox(mainWindow, {
+          type: 'warning',
+          title: 'Login Rate Limit',
+          message: 'You have made too many login attempts. Please wait a while before trying again.',
+        });
+      }
+    });
+
+    popup.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+      if (validatedURL.startsWith('http://localhost:8080')) {
+        dialog.showMessageBox(mainWindow, {
+          type: 'error',
+          title: 'Login Error',
+          message: 'Login failed due to server error or rate limiting. Please try again later.',
+        });
+      }
+    });
+  }
 
   let lastInput = 0;
   mainWindow.webContents.on('before-input-event', (e, input) => {
@@ -88,16 +168,26 @@ const createWindow = () => {
     }
   });
 
-  mainWindow.webContents.on('did-finish-load', applyConfig);
+  mainWindow.webContents.on('did-finish-load', () => {
+    splashWindow?.webContents.send('update-progress', 25); 
+    applyConfig();
+  });
 };
 
 app.whenReady().then(async () => {
+  createSplashWindow();
   await Promise.all([ensureFolders(), loadSettings()]);
+  splashWindow.webContents.send('update-progress', 25); 
   createWindow();
 });
 
 app.on('window-all-closed', () => process.platform !== 'darwin' && app.quit());
-app.on('activate', () => !BrowserWindow.getAllWindows().length && createWindow());
+app.on('activate', () => !BrowserWindow.getAllWindows().length && createSplashWindow() && createWindow());
+
+ipcMain.on('splash-complete', () => {
+  if (!splashWindow.isDestroyed()) splashWindow.close();
+  if (!mainWindow.isDestroyed()) mainWindow.show();
+});
 
 const toggleClientMenu = () => {
   if (clientMenu?.isDestroyed() === false) return clientMenu.close();
@@ -145,8 +235,27 @@ const applyConfig = async () => {
     } else if (!kchCSS) {
       await removeCSS('css');
     }
+
+    splashWindow?.webContents.send('update-progress', 25); 
+    await loadScripts();
   } catch (err) {
     console.error('Error applying config:', err);
+  }
+};
+
+const loadScripts = async () => {
+  try {
+    const disabledScripts = settingsCache.disabledScripts || [];
+    const scripts = await fs.readdir(scriptsPath).then(files => files.filter(f => f.endsWith('.js')));
+    for (const script of scripts) {
+      if (!disabledScripts.includes(script)) {
+        require(path.join(scriptsPath, script));
+      }
+    }
+    splashWindow?.webContents.send('update-progress', 25);
+  } catch (err) {
+    console.error('Error loading scripts:', err);
+    splashWindow?.webContents.send('update-progress', 25); 
   }
 };
 
@@ -278,4 +387,5 @@ const openCSSGallery = () => {
   cssGalleryWindow.loadFile('kch/css.html');
   cssGalleryWindow.setMenuBarVisibility(false);
 };
+
 setInterval(() => global.gc && global.gc(), 60000);
