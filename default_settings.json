@@ -1,18 +1,21 @@
 {
-  "devToolsEnabled": false,
-  "menuToggleKey": "ShiftRight",
-  "preloadedScripts": [],
-  "disabledScripts": [],
   "cssEnabled": false,
   "css": "",
   "cssLink": "",
   "backgroundEnabled": false,
   "background": "",
+  "devToolsEnabled": false,
+  "menuToggleKey": "ShiftRight",
+  "preloadedScripts": [],
+  "disabledScripts": [],
   "brightness": "100",
   "contrast": "1",
   "saturation": "1",
   "grayscale": "0",
   "hue": "0",
   "invert": false,
-  "sepia": "0"
+  "sepia": "0",
+  "startupBehaviour": "windowed",
+  "kchCSS": "",
+  "kchCSSTitle": ""
 }
