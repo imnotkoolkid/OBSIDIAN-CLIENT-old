@@ -10,7 +10,7 @@
   "author": "imnotkoolkid, Akuma",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^10.4.7",
+    "electron": "^28.1.0",
     "electron-builder": "^23.0.2"
   },
 
