@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Obsidian Client - Loading</title>
+  <style>
+    @font-face {
+      font-family: 'Plank';
+      src: url('assets/Plank.TTF') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .title {
+      font-family: 'Plank', sans-serif;
+      font-size: 6.5rem;
+      letter-spacing: 5px;
+      margin-bottom: 10px;
+      padding: 20px;
+      white-space: nowrap;
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        transparent 40%,
+        rgba(255, 255, 255, 0.61) 50%,
+        transparent 60%,
+        transparent 100%
+      );
+      background-size: 200% 100%;
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    .title.loaded {
+      animation: none; 
+      background: none;
+      color: white; 
+      -webkit-background-clip: none;
+      transition: color 0.5s ease;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0;
+      }
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    .loading-bar-container {
+      width: 98%;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      overflow: hidden;
+      transform: skew(25deg);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .loading-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #9277fe, #7058e0);
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title" id="title">obsidian</div>
+    <div class="loading-bar-container">
+      <div class="loading-bar" id="loading-bar"></div>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    const loadingBar = document.getElementById('loading-bar');
+    const title = document.getElementById('title');
+    let progress = 0;
+
+    const updateProgress = (increment) => {
+      progress = Math.min(progress + increment, 100);
+      loadingBar.style.width = `${progress}%`;
+      if (progress >= 100) {
+        title.classList.add('loaded');
+        setTimeout(() => ipcRenderer.send('splash-complete'), 500); 
+      }
+    };
+
+    ipcRenderer.on('update-progress', (event, increment) => {
+      updateProgress(increment);
+    });
+  </script>
+</body>
+</html>
