@@ -33,7 +33,7 @@ const loadSettings = async () => {
     return settingsCache;
   } catch (err) {
     console.error('Error loading settings:', err);
-    return settingsCache = { devToolsEnabled: false, disabledScripts: [], preloadedScripts: [], startupBehaviour: 'windowed' };
+    return settingsCache = { devToolsEnabled: false, disabledScripts: [], preloadedScripts: [], startupBehaviour: 'windowed', kchCSSTitle: '' };
   }
 };
 
@@ -44,12 +44,6 @@ const saveSettings = settings => {
   settingsWriteTimer = setTimeout(() => fs.writeFile(paths.settings, JSON.stringify(settingsCache))
     .catch(err => console.error('Error saving settings:', err)), 500);
 };
-function applySwitches() {
-  app.commandLine.appendSwitch("disable-frame-rate-limit");
-  app.allowRendererProcessReuse = true;
-}
-
-applySwitches();
 
 const createWindow = () => {
   mainWindow = new BrowserWindow({
@@ -119,10 +113,33 @@ const toggleClientMenu = () => {
 
 const applyConfig = async () => {
   try {
-    const { cssEnabled, cssLink, css, backgroundEnabled, background, brightness = '100', contrast = '1', saturation = '1', grayscale = '0', hue = '0', invert = false, sepia = '0' } = await loadSettings();
-    cssEnabled && (cssLink ? await injectCSS(null, cssLink) : css && await injectCSS(css));
-    backgroundEnabled && background && injectBackgroundCSS(background);
+    const { cssEnabled, cssLink, css, backgroundEnabled, background, brightness = '100', contrast = '1', saturation = '1', grayscale = '0', hue = '0', invert = false, sepia = '0', kchCSS, kchCSSTitle } = await loadSettings();
+
     await injectGeneralCSS(`body, html { filter: brightness(${brightness}%) contrast(${contrast}) saturate(${saturation}) grayscale(${grayscale}) hue-rotate(${hue}deg) invert(${invert ? 1 : 0}) sepia(${sepia}); }`);
+
+    if (backgroundEnabled && background) {
+      await injectBackgroundCSS(background);
+    } else {
+      await removeCSS('background');
+    }
+
+    if (kchCSS && kchCSSTitle) {
+      await injectKCHCSS(kchCSS, kchCSSTitle);
+    } else {
+      await removeKCHCSS();
+    }
+
+    if (cssEnabled && !kchCSS) {
+      if (cssLink) {
+        await injectCSS(null, cssLink);
+      } else if (css) {
+        await injectCSS(css);
+      } else {
+        await removeCSS('css');
+      }
+    } else if (!kchCSS) {
+      await removeCSS('css');
+    }
   } catch (err) {
     console.error('Error applying config:', err);
   }
@@ -152,6 +169,32 @@ const injectCSS = async (css, url) => {
   css && await saveSettings({ css, cssEnabled: true });
 };
 
+const injectKCHCSS = async (url, title) => {
+  try {
+    const css = await new Promise((resolve, reject) => {
+      fetch(url, { headers: { 'Cache-Control': 'no-cache' } })
+        .on('response', res => {
+          if (res.statusCode !== 200) return resolve('');
+          let data = '';
+          res.setEncoding('utf8').on('data', chunk => data += chunk).on('end', () => resolve(data));
+        })
+        .on('error', reject)
+        .end();
+    });
+    if (!css) return console.error(`Failed to load KCH CSS from ${url}`);
+    cssKeys.css && await mainWindow.webContents.removeInsertedCSS(cssKeys.css).catch(() => { });
+    cssKeys.kchCSS && await mainWindow.webContents.removeInsertedCSS(cssKeys.kchCSS).catch(() => { });
+    cssKeys.kchCSS = await mainWindow.webContents.insertCSS(css);
+    await saveSettings({ kchCSS: url, kchCSSTitle: title, cssEnabled: false });
+    const { backgroundEnabled, background } = await loadSettings();
+    if (backgroundEnabled && background) {
+      await injectBackgroundCSS(background);
+    }
+  } catch (err) {
+    console.error('Error injecting KCH CSS:', err);
+  }
+};
+
 const injectGeneralCSS = async css => {
   cssKeys.general && await mainWindow.webContents.removeInsertedCSS(cssKeys.general).catch(() => { });
   cssKeys.general = await mainWindow.webContents.insertCSS(css);
@@ -173,7 +216,15 @@ const removeCSS = async type => {
   if (cssKeys[type]) {
     await mainWindow.webContents.removeInsertedCSS(cssKeys[type]).catch(() => { });
     cssKeys[type] = null;
-    await saveSettings(type === 'css' ? { css: '', cssEnabled: false, cssLink: '' } : { background: '', backgroundEnabled: false });
+    await saveSettings(type === 'css' ? { cssEnabled: false } : { background: '', backgroundEnabled: false });
+  }
+};
+
+const removeKCHCSS = async () => {
+  if (cssKeys.kchCSS) {
+    await mainWindow.webContents.removeInsertedCSS(cssKeys.kchCSS).catch(() => { });
+    cssKeys.kchCSS = null;
+    await saveSettings({ kchCSS: '', kchCSSTitle: '' });
   }
 };
 
@@ -203,6 +254,8 @@ ipcMain.on('get-settings', e => e.returnValue = settingsCache);
 ipcMain.on('inject-general-css', (_, css) => injectGeneralCSS(css));
 ipcMain.on('reset-general-settings', (_, settings) => saveSettings(settings));
 ipcMain.on('get-disabled-scripts', async e => e.returnValue = (await loadSettings()).disabledScripts || []);
+ipcMain.on('inject-kch-css', (_, url, title) => injectKCHCSS(url, title));
+ipcMain.on('remove-kch-css', () => removeKCHCSS());
 
 const openCSSGallery = () => {
   const cssGalleryWindow = new BrowserWindow({
@@ -213,6 +266,7 @@ const openCSSGallery = () => {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
 
