@@ -3,36 +3,22 @@ const path = require('path');
 const fs = require('fs');
 
 const scriptsPath = ipcRenderer.sendSync('get-scripts-path');
-const userData = ipcRenderer.sendSync('get-user-data-path');
-const settingsPath = path.join(userData, '../ObsidianClient/clientsettings/settings.dat');
 const loadedScripts = [];
 
-let disabledScripts = [];
 try {
-  if (fs.existsSync(settingsPath)) {
-    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
-    disabledScripts = settings.disabledScripts || [];
-  }
-} catch (error) {
-  console.error('Error reading settings:', error);
-  disabledScripts = [];
-}
-
-try {
-  const scriptFiles = fs.readdirSync(scriptsPath).filter(file => file.endsWith('.js'));
-
-  scriptFiles.forEach(file => {
+  const disabledScripts = ipcRenderer.sendSync('get-disabled-scripts') || [];
+  fs.readdirSync(scriptsPath).filter(f => f.endsWith('.js')).forEach(file => {
     if (!disabledScripts.includes(file)) {
       try {
         require(path.join(scriptsPath, file));
         loadedScripts.push(file);
-      } catch (error) {
-        console.error(`Error loading script ${file}:`, error);
+      } catch (err) {
+        console.error(`Error loading script ${file}:`, err);
       }
     }
   });
-} catch (error) {
-  console.error('Error reading scripts folder:', error);
+} catch (err) {
+  console.error('Error reading scripts folder:', err);
 }
 
 ipcRenderer.send('set-preloaded-scripts', loadedScripts);
