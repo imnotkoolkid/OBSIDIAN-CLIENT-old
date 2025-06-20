@@ -2,6 +2,7 @@ const { app, BrowserWindow, Menu, ipcMain, shell, dialog } = require('electron')
 const { promises: fs } = require('fs');
 const path = require('path');
 const { get: fetch } = require('https');
+const { initDiscordRPC, updateDiscordPresence, cleanupDiscordRPC } = require('./rpc'); 
 
 const userData = app.getPath('userData');
 const documentsPath = app.getPath('documents');
@@ -12,7 +13,7 @@ const paths = {
   defaultSettings: path.join(__dirname, 'default_settings.json'),
 };
 
-let mainWindow, splashWindow, clientMenu, cssKeys = {}, settingsCache, settingsWriteTimer;
+let mainWindow, clientMenu, splashWindow, cssKeys = {}, settingsCache, settingsWriteTimer;
 let menuToggleKey = 'ShiftRight', devToolsEnabled = false, preloadedScripts = [], startupBehaviour = 'windowed';
 
 const ensureFolders = () => fs.mkdir(clientSettingsPath, { recursive: true })
@@ -49,13 +50,14 @@ const createSplashWindow = () => {
   splashWindow = new BrowserWindow({
     width: 1400,
     height: 400,
-    frame: false,
     transparent: true,
+    frame: false,
     alwaysOnTop: true,
+    icon: path.join(__dirname, 'assets', 'Obsidian Client.ico'),
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
-    }
+      contextIsolation: false,
+    },
   });
   splashWindow.loadFile('splash.html');
 };
@@ -67,7 +69,7 @@ const createWindow = () => {
     icon: path.join(__dirname, 'assets', 'Obsidian Client.ico'),
     webPreferences: { nodeIntegration: true, contextIsolation: false, preload: path.join(__dirname, 'scriptsPreload.js'), devTools: true },
     fullscreen: startupBehaviour === 'fullscreen',
-    show: false 
+    show: false,
   });
 
   mainWindow.webContents.setUserAgent(
@@ -95,6 +97,10 @@ const createWindow = () => {
   mainWindow.webContents.on('new-window', (event, url) => {
     event.preventDefault();
     openInPopup(url);
+  });
+
+  mainWindow.webContents.on('did-navigate-in-page', (event, url) => {
+    updateDiscordPresence(url); 
   });
 
   function openInPopup(url) {
@@ -168,25 +174,47 @@ const createWindow = () => {
     }
   });
 
-  mainWindow.webContents.on('did-finish-load', () => {
-    splashWindow?.webContents.send('update-progress', 25); 
-    applyConfig();
-  });
+  mainWindow.webContents.on('did-finish-load', applyConfig);
 };
 
 app.whenReady().then(async () => {
+  await ensureFolders();
+  await loadSettings();
+  initDiscordRPC(mainWindow); 
   createSplashWindow();
-  await Promise.all([ensureFolders(), loadSettings()]);
-  splashWindow.webContents.send('update-progress', 25); 
+  await new Promise(resolve => splashWindow.webContents.once('did-finish-load', resolve));
+  splashWindow.webContents.send('update-progress', 0);
   createWindow();
+  splashWindow.webContents.send('update-progress', 16);
+
+  ipcMain.once('set-preloaded-scripts', async () => {
+    splashWindow.webContents.send('update-progress', 33);
+    mainWindow.webContents.once('did-finish-load', async () => {
+      splashWindow.webContents.send('update-progress', 50);
+      const settings = await loadSettings();
+      splashWindow.webContents.send('update-progress', 66);
+      await applyConfigWithProgress(settings);
+      splashWindow.webContents.send('update-progress', 100);
+      await new Promise(resolve => setTimeout(resolve, 300));
+      mainWindow.show();
+      splashWindow.close();
+      splashWindow = null;
+    });
+  });
 });
 
-app.on('window-all-closed', () => process.platform !== 'darwin' && app.quit());
-app.on('activate', () => !BrowserWindow.getAllWindows().length && createSplashWindow() && createWindow());
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    cleanupDiscordRPC(); 
+    app.quit();
+  }
+});
 
-ipcMain.on('splash-complete', () => {
-  if (!splashWindow.isDestroyed()) splashWindow.close();
-  if (!mainWindow.isDestroyed()) mainWindow.show();
+app.on('activate', () => {
+  if (!BrowserWindow.getAllWindows().length) {
+    createWindow();
+    initDiscordRPC(mainWindow); 
+  }
 });
 
 const toggleClientMenu = () => {
@@ -235,27 +263,36 @@ const applyConfig = async () => {
     } else if (!kchCSS) {
       await removeCSS('css');
     }
-
-    splashWindow?.webContents.send('update-progress', 25); 
-    await loadScripts();
   } catch (err) {
     console.error('Error applying config:', err);
   }
 };
 
-const loadScripts = async () => {
-  try {
-    const disabledScripts = settingsCache.disabledScripts || [];
-    const scripts = await fs.readdir(scriptsPath).then(files => files.filter(f => f.endsWith('.js')));
-    for (const script of scripts) {
-      if (!disabledScripts.includes(script)) {
-        require(path.join(scriptsPath, script));
-      }
+const applyConfigWithProgress = async (settings) => {
+  const { cssEnabled, cssLink, css, backgroundEnabled, background, brightness = '100', contrast = '1', saturation = '1', grayscale = '0', hue = '0', invert = false, sepia = '0', kchCSS, kchCSSTitle } = settings;
+
+  await injectGeneralCSS(`body, html { filter: brightness(${brightness}%) contrast(${contrast}) saturate(${saturation}) grayscale(${grayscale}) hue-rotate(${hue}deg) invert(${invert ? 1 : 0}) sepia(${sepia}); }`);
+
+  if (cssEnabled && !kchCSS) {
+    if (cssLink) {
+      await injectCSS(null, cssLink);
+    } else if (css) {
+      await injectCSS(css);
     }
-    splashWindow?.webContents.send('update-progress', 25);
-  } catch (err) {
-    console.error('Error loading scripts:', err);
-    splashWindow?.webContents.send('update-progress', 25); 
+  } else if (!kchCSS) {
+    await removeCSS('css');
+  }
+  splashWindow.webContents.send('update-progress', 83);
+
+  if (backgroundEnabled && background) {
+    await injectBackgroundCSS(background);
+  } else {
+    await removeCSS('background');
+  }
+  if (kchCSS && kchCSSTitle) {
+    await injectKCHCSS(kchCSS, kchCSSTitle);
+  } else {
+    await removeKCHCSS();
   }
 };
 
