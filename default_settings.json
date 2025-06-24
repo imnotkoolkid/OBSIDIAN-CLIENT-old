@@ -17,5 +17,8 @@
   "sepia": "0",
   "startupBehaviour": "windowed",
   "kchCSS": "",
-  "kchCSSTitle": ""
+  "kchCSSTitle": "",
+  "opacity": "100",
+  "scale": "100",
+  "chatMode": "default"
 }
