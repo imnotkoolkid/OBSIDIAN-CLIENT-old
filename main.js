@@ -7,7 +7,8 @@ const { initDiscordRPC, updateDiscordPresence, cleanupDiscordRPC } = require('./
 const paths = {
   userData: app.getPath('userData'),
   documents: app.getPath('documents'),
-  settings: path.join(app.getPath('documents'), 'ObsidianClient', 'clientSettings', 'settings.dat'),
+  clientData: path.join(app.getPath('documents'), 'ObsidianClient', 'clientdata'),
+  settings: path.join(app.getPath('documents'), 'ObsidianClient', 'clientdata', 'data.json'),
   defaultSettings: path.join(__dirname, 'default_settings.json'),
   scripts: path.join(app.getPath('documents'), 'ObsidianClient', 'scripts'),
 };
@@ -33,7 +34,7 @@ let menuToggleKey = 'ShiftRight', devToolsEnabled = false, preloadedScripts = []
 
 const ensureFolders = async () => {
   try {
-    await fs.mkdir(path.dirname(paths.settings), { recursive: true });
+    await fs.mkdir(paths.clientData, { recursive: true });
     await fs.mkdir(paths.scripts, { recursive: true });
   } catch (err) {
     console.error('Error creating folders:', err);
@@ -48,7 +49,7 @@ const loadSettings = async () => {
       ? JSON.parse(await fs.readFile(paths.settings, 'utf8')) || {}
       : JSON.parse(await fs.readFile(paths.defaultSettings, 'utf8'));
     if (!settingsExist) await fs.writeFile(paths.settings, JSON.stringify(settingsCache));
-    ({ devToolsEnabled = false, menuToggleKey = 'ShiftRight', preloadedScripts =[], startupBehaviour = 'windowed', disabledScripts =[], opacity = '100', scale = '100', chatMode = 'default', cssList =[], kchCSS = '', kchCSSTitle = '' } = settingsCache);
+    ({ devToolsEnabled = false, menuToggleKey = 'ShiftRight', preloadedScripts = [], startupBehaviour = 'windowed', disabledScripts = [], opacity = '100', scale = '100', chatMode = 'default', cssList = [], kchCSS = '', kchCSSTitle = '' } = settingsCache);
     return settingsCache;
   } catch (err) {
     console.error('Error loading settings:', err);
@@ -80,13 +81,11 @@ const createWindow = () => {
     fullscreen: startupBehaviour === 'fullscreen', show: false,
   });
 
-mainWindow.webContents.setUserAgent(
-  `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.116 Safari/537.36 Electron/10.4.7 ObsidianClient`
-);
+  mainWindow.webContents.setUserAgent(
+    `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.116 Safari/537.36 Electron/10.4.7 ObsidianClient`
+  );
   mainWindow.loadURL('https://kirka.io/');
   Menu.setApplicationMenu(null);
-
-
 
   mainWindow.on('page-title-updated', e => e.preventDefault());
   mainWindow.on('closed', () => {
