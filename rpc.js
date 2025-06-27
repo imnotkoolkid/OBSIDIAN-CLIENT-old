@@ -32,18 +32,16 @@ const initDiscordRPC = (mainWindow) => {
 
   rpcClient.on('ready', () => {
     rpcConnected = true;
-    connectionAttempts = 0; 
-    console.log('Connected');
+    connectionAttempts = 0;
     updateDiscordPresence(mainWindow?.webContents.getURL() || base_url);
   });
 
   rpcClient.on('error', (err) => {
-    console.error('Discord RPC error:', err);
     rpcConnected = false;
     if (connectionAttempts < MAX_ATTEMPTS) {
       setTimeout(() => connectDiscordRPC(mainWindow), 10000);
     } else {
-      console.log('Failed');
+      setTimeout(() => connectDiscordRPC(mainWindow), 70000);
     }
   });
 
@@ -51,15 +49,16 @@ const initDiscordRPC = (mainWindow) => {
 };
 
 const connectDiscordRPC = (mainWindow) => {
-  if (!rpcConnected && connectionAttempts < MAX_ATTEMPTS) {
+  if (!rpcConnected) {
     connectionAttempts++;
-    console.log(`Attempting to connect to Discord RPC (Attempt ${connectionAttempts}/${MAX_ATTEMPTS})`);
-    rpcClient.login({ clientId }).catch(err => {
-      console.error('Failed to connect to Discord RPC');
+    if (connectionAttempts <= MAX_ATTEMPTS) {
+      console.log(`Attempting to connect to Discord RPC (Attempt ${connectionAttempts}/${MAX_ATTEMPTS})`);
+    }
+    rpcClient.login({ clientId }).catch(() => {
       if (connectionAttempts < MAX_ATTEMPTS) {
         setTimeout(() => connectDiscordRPC(mainWindow), 10000);
       } else {
-        console.log('Failed');
+        setTimeout(() => connectDiscordRPC(mainWindow), 70000);
       }
     });
   }
@@ -100,7 +99,7 @@ const cleanupDiscordRPC = () => {
   if (rpcClient && rpcConnected) {
     rpcClient.destroy();
     rpcConnected = false;
-    connectionAttempts = 0; 
+    connectionAttempts = 0;
   }
 };
 
