@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Join Game</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #9277fe;
+      --primary-dark: #7058e0;
+      --text-color: #fff;
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --hover-bg: rgba(255, 255, 255, 0.05);
+    }
+
+    body {
+      margin: 0;
+      background: transparent;
+      height: 120px;
+      width: 400px;
+      overflow: hidden;
+      user-select: none;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    #join-link-modal {
+      height: 100%;
+      width: 100%;
+      color: var(--text-color);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      background: linear-gradient(135deg, rgba(35, 25, 45, 0.909), rgba(20, 15, 35, 0.909));
+      border-radius: 12px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      box-sizing: border-box;
+    }
+
+    .join-input-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .join-input {
+      flex: 1;
+      padding: 8px 10px;
+      background: rgba(10, 5, 20, 0.8);
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      color: var(--text-color);
+      font: 12px system-ui;
+      transition: border 0.3s;
+    }
+
+    .join-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .join-button, .paste-button {
+      padding: 8px 12px;
+      background: #7158e0a0;
+      border: 1px solid var(--primary);
+      border-radius: 6px;
+      color: var(--text-color);
+      font: 12px system-ui;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .join-button:hover, .paste-button:hover {
+      background: var(--primary);
+    }
+
+    .error-message {
+      color: #ff6b6b;
+      font-size: 12px;
+      display: none;
+    }
+
+    .error-message.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="join-link-modal">
+    <h2 style="margin: 0 0 8px; color: var(--primary); font: 600 16px/1 system-ui; border-bottom: 1px solid var(--glass-border); padding-bottom: 6px;">Join Game</h2>
+    <div class="join-input-container">
+      <input type="text" class="join-input" id="game-link-input" placeholder="Paste game link (https://kirka.io/games/...)">
+      <button class="paste-button" id="paste-button"><i class="fas fa-paste"></i></button>
+      <button class="join-button" id="join-button"><i class="fa fa-arrow-right"></i></button>
+    </div>
+    <div class="error-message" id="error-message">Invalid link. Must start with https://kirka.io/games/</div>
+  </div>
+<script>
+  const els = {
+  input: document.getElementById('game-link-input'),
+  joinButton: document.getElementById('join-button'),
+  pasteButton: document.getElementById('paste-button'),
+  error: document.getElementById('error-message'),
+};
+
+const validateLink = url => url.trim().startsWith('https://kirka.io/games/') || url.trim().startsWith('https://kirka.io/___lobby___/');
+
+els.joinButton.addEventListener('click', () => {
+  const url = els.input.value.trim();
+  if (validateLink(url)) {
+    window.obsidianClient.joinGame(url);
+    els.error.classList.remove('active');
+  } else {
+    els.error.textContent = 'Invalid link. Must start with https://kirka.io/games/ or https://kirka.io/___lobby___/';
+    els.error.classList.add('active');
+  }
+});
+
+els.pasteButton.addEventListener('click', async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    els.input.value = text;
+    els.error.classList.remove('active');
+  } catch (err) {
+    console.error('Failed to paste:', err);
+    els.error.textContent = 'Failed to paste from clipboard';
+    els.error.classList.add('active');
+  }
+});
+
+els.input.addEventListener('input', () => els.error.classList.remove('active'));
+els.input.addEventListener('keypress', e => {
+  if (e.key === 'Enter') els.joinButton.click();
+});
+</script>
+</body>
+</html>
