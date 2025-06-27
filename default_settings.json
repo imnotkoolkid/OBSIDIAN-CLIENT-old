@@ -1,11 +1,9 @@
 {
-  "cssEnabled": false,
-  "css": "",
-  "cssLink": "",
   "backgroundEnabled": false,
   "background": "",
   "devToolsEnabled": false,
   "menuToggleKey": "ShiftRight",
+  "joinLinkKey": "KeyJ",
   "preloadedScripts": [],
   "disabledScripts": [],
   "brightness": "100",
@@ -20,5 +18,16 @@
   "kchCSSTitle": "",
   "opacity": "100",
   "scale": "100",
-  "chatMode": "default"
+  "chatMode": "default",
+  "cssList": [
+    {
+      "id": "default-obsidian-ui",
+      "name": "Obsidian UI",
+      "url": "https://raw.githubusercontent.com/imnotkoolkid/KCH/refs/heads/main/resources/css-files/obsidian_ui.css",
+      "code": "",
+      "enabled": true,
+      "isDefault": true
+    }
+  ],
+  "openingAnimations": false
 }
