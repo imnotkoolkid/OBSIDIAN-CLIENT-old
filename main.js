@@ -4,6 +4,7 @@ const path = require('path');
 const { get: fetch } = require('https');
 const { initDiscordRPC, updateDiscordPresence, cleanupDiscordRPC } = require('./rpc');
 const CSSHandler = require('./src/csshandler');
+const ScriptHandler = require('./src/scripthandler');
 const { pathToFileURL } = require('url');
 
 const paths = {
@@ -127,28 +128,28 @@ const createWindow = () => {
   }
 
   let lastInput = 0;
-mainWindow.webContents.on('before-input-event', (e, input) => {
-  const now = Date.now();
-  if (now - lastInput < 50) return;
-  lastInput = now;
+  mainWindow.webContents.on('before-input-event', (e, input) => {
+    const now = Date.now();
+    if (now - lastInput < 50) return;
+    lastInput = now;
 
-  if (input.code === 'F11') {
-    mainWindow.setFullScreen(!mainWindow.isFullScreen());
-    e.preventDefault();
-  } else if (input.code === settingsCache.menuToggleKey && input.type === 'keyDown') {
-    toggleClientMenu();
-    e.preventDefault();
-  } else if (input.code === settingsCache.joinLinkKey && input.type === 'keyDown') {
-    toggleJoinLinkModal();
-    e.preventDefault();
-  } else if (settingsCache.devToolsEnabled && (input.code === 'F12' || (input.control && input.shift && input.code === 'KeyI'))) {
-    mainWindow.webContents.openDevTools();
-    e.preventDefault();
-  } else if (input.code === 'F5') {
-    mainWindow.webContents.reload();
-    e.preventDefault();
-  }
-});
+    if (input.code === 'F11') {
+      mainWindow.setFullScreen(!mainWindow.isFullScreen());
+      e.preventDefault();
+    } else if (input.code === settingsCache.menuToggleKey && input.type === 'keyDown') {
+      toggleClientMenu();
+      e.preventDefault();
+    } else if (input.code === settingsCache.joinLinkKey && input.type === 'keyDown') {
+      toggleJoinLinkModal();
+      e.preventDefault();
+    } else if (settingsCache.devToolsEnabled && (input.code === 'F12' || (input.control && input.shift && input.code === 'KeyI'))) {
+      mainWindow.webContents.openDevTools();
+      e.preventDefault();
+    } else if (input.code === 'F5') {
+      mainWindow.webContents.reload();
+      e.preventDefault();
+    }
+  });
 
   mainWindow.webContents.on('did-finish-load', () => cssHandler.applyConfig());
 };
@@ -182,6 +183,7 @@ app.whenReady().then(async () => {
 
   await ensureFolders();
   await loadSettings();
+  const scriptHandler = new ScriptHandler(paths.scripts);
   initDiscordRPC(mainWindow);
   createSplashWindow();
   await new Promise(resolve => splashWindow.webContents.once('did-finish-load', resolve));
@@ -215,6 +217,62 @@ app.whenReady().then(async () => {
       `);
     });
   });
+
+  // IPC Handlers
+  ipcMain.on('open-css-gallery', () => {
+    const cssGalleryWindow = new BrowserWindow({
+      width: 1050, height: 600, title: 'KCH CSS Gallery', icon: path.join(__dirname, 'kch/assets/kch.ico'),
+      webPreferences: { nodeIntegration: false, contextIsolation: true, preload: path.join(__dirname, 'preload.js') },
+    });
+    cssGalleryWindow.loadFile('kch/css.html');
+    cssGalleryWindow.setMenuBarVisibility(false);
+  });
+
+  ipcMain.on('join-game', (_, url) => {
+    if ((url.startsWith('https://kirka.io/games/') || url.startsWith('https://kirka.io/___lobby___/')) && !mainWindow.isDestroyed()) {
+      mainWindow.loadURL(url);
+      joinLinkModal?.close();
+    }
+  });
+
+  ipcMain.on('toggle-join-link-modal', () => toggleJoinLinkModal());
+
+  ipcMain.on('set-join-link-key', (_, key) => saveSettings({ joinLinkKey: joinLinkKey = key }));
+
+  ipcMain.on('set-preloaded-scripts', (_, scripts) => saveSettings({ preloadedScripts: preloadedScripts = scripts }));
+  ipcMain.on('get-preloaded-scripts', e => e.returnValue = preloadedScripts);
+  ipcMain.on('open-scripts-folder', () => ensureFolders().then(() => shell.openPath(paths.scripts)).catch(err => console.error('Error opening scripts folder:', err)));
+  ipcMain.on('get-scripts-path', e => e.returnValue = scriptHandler.getScriptsPath());
+  ipcMain.on('get-all-scripts', e => e.returnValue = scriptHandler.getAllScripts());
+  ipcMain.on('get-disabled-scripts', e => e.returnValue = scriptHandler.getDisabledScripts(settingsCache));
+  ipcMain.on('toggle-script', (_, script, enabled) => {
+    const newDisabledScripts = scriptHandler.getNewDisabledScripts(settingsCache, script, enabled);
+    saveSettings({ disabledScripts: newDisabledScripts });
+  });
+  ipcMain.on('close-menu', () => clientMenu?.close());
+  ipcMain.on('inject-background', (_, url) => cssHandler.injectBackgroundCSS(url));
+  ipcMain.on('remove-background', () => cssHandler.removeCSS('background'));
+  ipcMain.on('set-dev-tools', (_, enabled) => saveSettings({ devToolsEnabled: devToolsEnabled = enabled }));
+  ipcMain.on('set-menu-toggle-key', (_, key) => saveSettings({ menuToggleKey: menuToggleKey = key }));
+  ipcMain.on('reload-main-window', () => mainWindow?.isDestroyed() || mainWindow.webContents.reload());
+  ipcMain.on('get-user-data-path', e => e.returnValue = paths.userData);
+  ipcMain.on('save-settings', (_, settings) => saveSettings(settings));
+  ipcMain.on('get-settings', e => e.returnValue = settingsCache);
+  ipcMain.on('inject-general-css', (_, css) => cssHandler.injectGeneralCSS(css));
+  ipcMain.on('reset-general-settings', (_, settings) => saveSettings(settings));
+  ipcMain.on('inject-kch-css', async (_, url, title) => {
+    await cssHandler.injectKCHCSS(url, title);
+    mainWindow.webContents.send('update-kch-css-state', { kchCSSTitle: title });
+  });
+  ipcMain.on('remove-kch-css', async () => {
+    await cssHandler.removeKCHCSS();
+    mainWindow.webContents.send('update-kch-css-state', { kchCSSTitle: '' });
+  });
+  ipcMain.on('inject-ui-css', (_, settings) => cssHandler.injectUICSS(settings));
+  ipcMain.on('add-custom-css', (_, cssEntry) => cssHandler.addCustomCSS(cssEntry));
+  ipcMain.on('toggle-custom-css', (_, id, enabled) => cssHandler.toggleCustomCSS(id, enabled));
+  ipcMain.on('remove-custom-css', (_, id) => cssHandler.removeCustomCSSFromSettings(id));
+  ipcMain.on('update-custom-css', (_, cssEntry) => cssHandler.updateCustomCSS(cssEntry));
 });
 
 app.on('window-all-closed', () => {
@@ -245,61 +303,5 @@ const toggleClientMenu = () => {
   clientMenu.on('closed', () => mainWindow.removeListener('move', updatePosition));
   clientMenu.on('blur', () => clientMenu?.close());
 };
-
-ipcMain.on('open-css-gallery', () => {
-  const cssGalleryWindow = new BrowserWindow({
-    width: 1050, height: 600, title: 'KCH CSS Gallery', icon: path.join(__dirname, 'kch/assets/kch.ico'),
-    webPreferences: { nodeIntegration: false, contextIsolation: true, preload: path.join(__dirname, 'preload.js') },
-  });
-  cssGalleryWindow.loadFile('kch/css.html');
-  cssGalleryWindow.setMenuBarVisibility(false);
-});
-
-ipcMain.on('join-game', (_, url) => {
-  if ((url.startsWith('https://kirka.io/games/') || url.startsWith('https://kirka.io/___lobby___/')) && !mainWindow.isDestroyed()) {
-    mainWindow.loadURL(url);
-    joinLinkModal?.close();
-  }
-});
-
-ipcMain.on('toggle-join-link-modal', () => toggleJoinLinkModal());
-
-ipcMain.on('set-join-link-key', (_, key) => saveSettings({ joinLinkKey: joinLinkKey = key }));
-
-ipcMain.on('get-scripts-path', e => e.returnValue = paths.scripts);
-ipcMain.on('get-loaded-scripts', async e => e.returnValue = await fs.readdir(paths.scripts).then(files => files.filter(f => f.endsWith('.js'))).catch(err => (console.error('Error reading scripts folder:', err), [])));
-ipcMain.on('set-preloaded-scripts', (_, scripts) => saveSettings({ preloadedScripts: preloadedScripts = scripts }));
-ipcMain.on('get-preloaded-scripts', e => e.returnValue = preloadedScripts);
-ipcMain.on('close-menu', () => clientMenu?.close());
-ipcMain.on('inject-background', (_, url) => cssHandler.injectBackgroundCSS(url));
-ipcMain.on('remove-background', () => cssHandler.removeCSS('background'));
-ipcMain.on('set-dev-tools', (_, enabled) => saveSettings({ devToolsEnabled: devToolsEnabled = enabled }));
-ipcMain.on('set-menu-toggle-key', (_, key) => saveSettings({ menuToggleKey: menuToggleKey = key }));
-ipcMain.on('open-scripts-folder', () => ensureFolders().then(() => shell.openPath(paths.scripts)).catch(err => console.error('Error opening scripts folder:', err)));
-ipcMain.on('get-all-scripts', async e => e.returnValue = await fs.readdir(paths.scripts).then(files => files.filter(f => f.endsWith('.js'))).catch(err => (console.error('Error reading all scripts:', err), [])));
-ipcMain.on('toggle-script', async (_, script, enabled) => {
-  const { disabledScripts = [] } = await loadSettings();
-  saveSettings({ disabledScripts: enabled ? disabledScripts.filter(s => s !== script) : [...disabledScripts, script] });
-});
-ipcMain.on('reload-main-window', () => mainWindow?.isDestroyed() || mainWindow.webContents.reload());
-ipcMain.on('get-user-data-path', e => e.returnValue = paths.userData);
-ipcMain.on('save-settings', (_, settings) => saveSettings(settings));
-ipcMain.on('get-settings', e => e.returnValue = settingsCache);
-ipcMain.on('inject-general-css', (_, css) => cssHandler.injectGeneralCSS(css));
-ipcMain.on('reset-general-settings', (_, settings) => saveSettings(settings));
-ipcMain.on('get-disabled-scripts', async e => e.returnValue = (await loadSettings()).disabledScripts || []);
-ipcMain.on('inject-kch-css', async (_, url, title) => {
-  await cssHandler.injectKCHCSS(url, title);
-  mainWindow.webContents.send('update-kch-css-state', { kchCSSTitle: title });
-});
-ipcMain.on('remove-kch-css', async () => {
-  await cssHandler.removeKCHCSS();
-  mainWindow.webContents.send('update-kch-css-state', { kchCSSTitle: '' });
-});
-ipcMain.on('inject-ui-css', (_, settings) => cssHandler.injectUICSS(settings));
-ipcMain.on('add-custom-css', (_, cssEntry) => cssHandler.addCustomCSS(cssEntry));
-ipcMain.on('toggle-custom-css', (_, id, enabled) => cssHandler.toggleCustomCSS(id, enabled));
-ipcMain.on('remove-custom-css', (_, id) => cssHandler.removeCustomCSSFromSettings(id));
-ipcMain.on('update-custom-css', (_, cssEntry) => cssHandler.updateCustomCSS(cssEntry));
 
 setInterval(() => global.gc && global.gc(), 60000);
