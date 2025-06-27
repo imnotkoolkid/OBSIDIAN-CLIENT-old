@@ -7,7 +7,7 @@
     "start": "electron .",
     "build": "electron-builder"
   },
-  "author": "imnotkoolkid , Akuma",
+  "author": "imnotkoolkid",
   "license": "MIT",
   "devDependencies": {
     "electron": "^36.5.0",
@@ -30,5 +30,8 @@
       "uninstallDisplayName": "Obsidian Client",
       "allowToChangeInstallationDirectory": false
     }
+  },
+  "dependencies": {
+    "discord-rpc": "^4.0.1"
   }
 }
