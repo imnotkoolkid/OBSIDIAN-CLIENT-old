@@ -28,5 +28,8 @@ contextBridge.exposeInMainWorld('obsidianClient', {
   toggleCustomCSS: (id, enabled) => ipcRenderer.send('toggle-custom-css', id, enabled),
   removeCustomCSS: id => ipcRenderer.send('remove-custom-css', id),
   updateCustomCSS: cssEntry => ipcRenderer.send('update-custom-css', cssEntry),
+  joinGame: url => ipcRenderer.send('join-game', url),
+  toggleJoinLinkModal: () => ipcRenderer.send('toggle-join-link-modal'),
+  setJoinLinkKey: key => ipcRenderer.send('set-join-link-key', key),
   onUpdateKCHCSSState: (callback) => ipcRenderer.on('update-kch-css-state', (event, state) => callback(state)),
 });
