@@ -7,6 +7,7 @@ const {
   dialog,
   protocol,
   net,
+  nativeImage,
 } = require("electron");
 const { promises: fs } = require("fs");
 const path = require("path");
@@ -42,6 +43,7 @@ const paths = {
   ),
   defaultSettings: path.join(__dirname, "default_settings.json"),
   scripts: path.join(app.getPath("documents"), "ObsidianClient", "scripts"),
+  captured: path.join(app.getPath("documents"), "ObsidianClient", "captured"),
 };
 
 app.commandLine.appendSwitch("disable-gpu-vsync");
@@ -73,6 +75,7 @@ const ensureFolders = async () => {
   try {
     await fs.mkdir(paths.clientData, { recursive: true });
     await fs.mkdir(paths.scripts, { recursive: true });
+    await fs.mkdir(paths.captured, { recursive: true });
   } catch (err) {
     console.error("Error creating folders:", err);
   }
@@ -122,10 +125,12 @@ const createSplashWindow = () => {
     transparent: true,
     frame: false,
     alwaysOnTop: true,
+    resizable: false,
     icon: path.join(__dirname, "assets", "Obsidian Client.ico"),
     webPreferences: { nodeIntegration: true, contextIsolation: false },
   });
   splashWindow.loadFile("splash.html");
+  splashWindow.setFocusable(false);
 };
 
 const createWindow = () => {
@@ -212,7 +217,7 @@ const createWindow = () => {
   }
 
   let lastInput = 0;
-  mainWindow.webContents.on("before-input-event", (e, input) => {
+  mainWindow.webContents.on("before-input-event", async (e, input) => {
     const now = Date.now();
     if (now - lastInput < 50) return;
     lastInput = now;
@@ -241,6 +246,16 @@ const createWindow = () => {
       e.preventDefault();
     } else if (input.code === "F5") {
       mainWindow.webContents.reload();
+      e.preventDefault();
+    } else if (input.code === "F2" && input.type === "keyDown") {
+      try {
+        const screenshot = await mainWindow.webContents.capturePage();
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const screenshotPath = path.join(paths.captured, `screenshot-${timestamp}.png`);
+        await fs.writeFile(screenshotPath, screenshot.toPNG());
+      } catch (err) {
+        console.error("Error capturing screenshot:", err);
+      }
       e.preventDefault();
     }
   });
