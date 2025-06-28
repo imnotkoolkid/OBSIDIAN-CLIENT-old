@@ -576,6 +576,192 @@
     .css-warning.active {
       display: block;
     }
+
+    .container {
+      display: flex;
+      height: 100%;
+      background: rgba(22, 16, 35, 0.75);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+
+    .menu-item:hover {
+      background: var(--hover-bg);
+    }
+
+    .menu-item.active {
+      background: var(--active-item);
+    }
+
+
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .analytics-header {
+      color: var(--primary);
+      font: 600 20px/1 system-ui;
+      border-bottom: 1px solid var(--glass-border);
+      padding-bottom: 12px;
+      text-align: center;
+    }
+
+    .chart-container {
+      background: rgba(15, 15, 30, 0.6);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .chart-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .chart {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      height: 200px;
+      padding: 10px 0 0 0;
+      margin-bottom: 15px;
+    }
+
+    .bar-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      margin: 0 4px;
+      min-width: 0;
+    }
+
+    .bar {
+      width: 100%;
+      max-width: 40px;
+      background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+      border-radius: 4px 4px 0 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      min-height: 3px;
+      display: block;
+    }
+
+    .bar:hover {
+      background: linear-gradient(180deg, #a385ff, var(--primary));
+      transform: scaleX(1.1);
+      box-shadow: 0 4px 15px rgba(146, 119, 254, 0.3);
+    }
+
+    .bar-label {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 8px;
+      text-align: center;
+      font-weight: 500;
+      width: 100%;
+      min-height: 30px;
+      line-height: 15px;
+      word-wrap: break-word;
+      hyphens: auto;
+    }
+
+    .bar-value {
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: var(--text-color);
+      background: rgba(0, 0, 0, 0.7);
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .bar:hover .bar-value {
+      opacity: 1;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .stat-card {
+      background: rgba(15, 15, 30, 0.6);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .loading {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 14px;
+      padding: 40px;
+    }
+
+    .error {
+      text-align: center;
+      color: #ff6b6b;
+      font-size: 14px;
+      padding: 40px;
+      background: rgba(255, 107, 107, 0.1);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .y-axis {
+      position: absolute;
+      left: -5px;
+      top: -15px;
+      height: 190px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.5);
+      align-items: flex-end;
+      padding-right: 5px;
+    }
+
+    .chart-wrapper {
+      position: relative;
+      padding-left: 25px;
+    }
   </style>
 </head>
 
@@ -588,6 +774,7 @@
         <div class="menu-item" data-tab="ui"><i class="fas fa-display"></i>UI</div>
         <div class="menu-item" data-tab="css"><i class="fas fa-palette"></i>CSS</div>
         <div class="menu-item" data-tab="scripts"><i class="fas fa-file-code"></i>Scripts</div>
+        <div class="menu-item" data-tab="analytics"><i class="fas fa-chart-bar"></i>Analytics</div>
         <div class="menu-item" data-tab="other"><i class="fas fa-tools"></i>Other</div>
         <div class="menu-item" data-tab="about"><i class="fas fa-circle-info"></i>About</div>
       </div>
@@ -728,6 +915,46 @@
         </div>
         <div id="scripts-list-container"></div>
       </div>
+      <div class="tab-content" id="analytics">
+        <div class="analytics-header">Analytics</div>
+        <div id="analytics-loading" class="loading">Loading analytics data...</div>
+        <div id="analytics-error" class="error" style="display: none;">
+          Error loading analytics data: <span id="analytics-error-message"></span>
+        </div>
+        <div id="analytics-content" style="display: none;">
+          <div class="chart-container">
+            <div class="chart-title">7-Day Playtime Overview</div>
+            <div class="chart-wrapper">
+              <div class="y-axis">
+                <span>24h</span>
+                <span>18h</span>
+                <span>12h</span>
+                <span>6h</span>
+                <span>0h</span>
+              </div>
+              <div class="chart" id="playtime-chart"></div>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value" id="total-playtime">0h 0m</div>
+              <div class="stat-label">Total Playtime</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="avg-daily">0h 0m</div>
+              <div class="stat-label">Daily Average</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="total-games">0</div>
+              <div class="stat-label">Games Played</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="active-days">0</div>
+              <div class="stat-label">Active Days</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="content-panel" id="other-panel">
         <h2>Other Settings</h2>
         <div class="option-item">
@@ -745,12 +972,12 @@
           </div>
         </div>
         <div class="option-item">
-  <span>Join Link Key</span>
-  <div>
-    <button class="key-bind-button" id="join-key-bind-button">Set Key</button>
-    <span class="key-display" id="join-key-display">J</span>
-  </div>
-</div>
+          <span>Join Link Key</span>
+          <div>
+            <button class="key-bind-button" id="join-key-bind-button">Set Key</button>
+            <span class="key-display" id="join-key-display">J</span>
+          </div>
+        </div>
         <div class="option-item">
           <span>Startup Behaviour</span>
           <div class="select-container">
@@ -772,87 +999,87 @@
   </div>
 <script>
   const els = {
-  background: document.getElementById('background-input'),
-  devTools: document.getElementById('dev-tools-toggle'),
-  keyBtn: document.getElementById('key-bind-button'),
-  keyDisp: document.getElementById('key-display'),
-  joinKeyBtn: document.getElementById('join-key-bind-button'),
-  joinKeyDisp: document.getElementById('join-key-display'),
-  openScriptsFolder: document.getElementById('open-scripts-folder'),
-  scriptCount: document.getElementById('loaded-scripts-count'),
-  scriptsContainer: document.getElementById('scripts-list-container'),
-  sliders: {
-    brightness: { slider: document.getElementById('brightness-slider'), value: document.getElementById('brightness-value'), unit: '%' },
-    contrast: { slider: document.getElementById('contrast-slider'), value: document.getElementById('contrast-value') },
-    saturation: { slider: document.getElementById('saturation-slider'), value: document.getElementById('saturation-value') },
-    grayscale: { slider: document.getElementById('grayscale-slider'), value: document.getElementById('grayscale-value') },
-    hue: { slider: document.getElementById('hue-slider'), value: document.getElementById('hue-value') },
-    sepia: { slider: document.getElementById('sepia-slider'), value: document.getElementById('sepia-value') },
-  },
-  invertToggle: document.getElementById('invert-toggle'),
-  resetButton: document.getElementById('reset-settings'),
-  startupBehaviour: document.getElementById('startup-behaviour'),
-  kchCSSBar: document.getElementById('kch-css-bar'),
-  kchCSSTitle: document.getElementById('kch-css-title'),
-  kchCSSRemove: document.getElementById('kch-css-remove'),
-  opacity: { slider: document.getElementById('opacity-slider'), value: document.getElementById('opacity-value'), unit: '%' },
-  scale: { slider: document.getElementById('scale-slider'), value: document.getElementById('scale-value'), unit: '%' },
-  chatMode: document.getElementById('chat-mode'),
-  addCSSBar: document.getElementById('add-css-bar'),
-  cssListContainer: document.getElementById('css-list-container'),
-  cssDropdown: document.getElementById('css-dropdown'),
-  cssNameInput: document.getElementById('css-name-input'),
-  cssUrlInput: document.getElementById('css-url-input'),
-  cssCodeInput: document.getElementById('css-code-input'),
-  cssDropdownCancel: document.getElementById('css-dropdown-cancel'),
-  cssDropdownSave: document.getElementById('css-dropdown-save'),
-  cssDropdownTitle: document.getElementById('css-dropdown-title'),
-  cssWarning: document.getElementById('css-warning'),
-  cssGallery: document.getElementById('css-gallery-bar'),
-  openingAnimations: document.getElementById('opening-animations-toggle'),
-};
+    background: document.getElementById('background-input'),
+    devTools: document.getElementById('dev-tools-toggle'),
+    keyBtn: document.getElementById('key-bind-button'),
+    keyDisp: document.getElementById('key-display'),
+    joinKeyBtn: document.getElementById('join-key-bind-button'),
+    joinKeyDisp: document.getElementById('join-key-display'),
+    openScriptsFolder: document.getElementById('open-scripts-folder'),
+    scriptCount: document.getElementById('loaded-scripts-count'),
+    scriptsContainer: document.getElementById('scripts-list-container'),
+    sliders: {
+      brightness: { slider: document.getElementById('brightness-slider'), value: document.getElementById('brightness-value'), unit: '%' },
+      contrast: { slider: document.getElementById('contrast-slider'), value: document.getElementById('contrast-value') },
+      saturation: { slider: document.getElementById('saturation-slider'), value: document.getElementById('saturation-value') },
+      grayscale: { slider: document.getElementById('grayscale-slider'), value: document.getElementById('grayscale-value') },
+      hue: { slider: document.getElementById('hue-slider'), value: document.getElementById('hue-value') },
+      sepia: { slider: document.getElementById('sepia-slider'), value: document.getElementById('sepia-value') },
+    },
+    invertToggle: document.getElementById('invert-toggle'),
+    resetButton: document.getElementById('reset-settings'),
+    startupBehaviour: document.getElementById('startup-behaviour'),
+    kchCSSBar: document.getElementById('kch-css-bar'),
+    kchCSSTitle: document.getElementById('kch-css-title'),
+    kchCSSRemove: document.getElementById('kch-css-remove'),
+    opacity: { slider: document.getElementById('opacity-slider'), value: document.getElementById('opacity-value'), unit: '%' },
+    scale: { slider: document.getElementById('scale-slider'), value: document.getElementById('scale-value'), unit: '%' },
+    chatMode: document.getElementById('chat-mode'),
+    addCSSBar: document.getElementById('add-css-bar'),
+    cssListContainer: document.getElementById('css-list-container'),
+    cssDropdown: document.getElementById('css-dropdown'),
+    cssNameInput: document.getElementById('css-name-input'),
+    cssUrlInput: document.getElementById('css-url-input'),
+    cssCodeInput: document.getElementById('css-code-input'),
+    cssDropdownCancel: document.getElementById('css-dropdown-cancel'),
+    cssDropdownSave: document.getElementById('css-dropdown-save'),
+    cssDropdownTitle: document.getElementById('css-dropdown-title'),
+    cssWarning: document.getElementById('css-warning'),
+    cssGallery: document.getElementById('css-gallery-bar'),
+    openingAnimations: document.getElementById('opening-animations-toggle'),
+  };
 
-let editingCSSId = null;
-let settingKey = false;
-let settingJoinKey = false;
+  let editingCSSId = null;
+  let settingKey = false;
+  let settingJoinKey = false;
 
-const debounce = (fn, ms) => {
-  let timeout;
-  return (...args) => (clearTimeout(timeout), timeout = setTimeout(() => fn(...args), ms));
-};
+  const debounce = (fn, ms) => {
+    let timeout;
+    return (...args) => (clearTimeout(timeout), timeout = setTimeout(() => fn(...args), ms));
+  };
 
-const applyGeneralSettings = () => {
-  const settings = Object.entries(els.sliders).reduce((acc, [k, { slider: { value } }]) => ({ ...acc, [k]: value }), {});
-  settings.invert = els.invertToggle.checked;
-  const css = `body, html { filter: brightness(${settings.brightness}%) contrast(${settings.contrast}) saturate(${settings.saturation}) grayscale(${settings.grayscale}) hue-rotate(${settings.hue}deg) invert(${settings.invert ? 1 : 0}) sepia(${settings.sepia}); }`;
-  window.obsidianClient.injectGeneralCSS(css);
-  window.obsidianClient.saveSettings(settings);
-};
+  const applyGeneralSettings = () => {
+    const settings = Object.entries(els.sliders).reduce((acc, [k, { slider: { value } }]) => ({ ...acc, [k]: value }), {});
+    settings.invert = els.invertToggle.checked;
+    const css = `body, html { filter: brightness(${settings.brightness}%) contrast(${settings.contrast}) saturate(${settings.saturation}) grayscale(${settings.grayscale}) hue-rotate(${settings.hue}deg) invert(${settings.invert ? 1 : 0}) sepia(${settings.sepia}); }`;
+    window.obsidianClient.injectGeneralCSS(css);
+    window.obsidianClient.saveSettings(settings);
+  };
 
-const resetSettings = () => {
-  const defaults = { brightness: '100', contrast: '1', saturation: '1', grayscale: '0', hue: '0', sepia: '0', invert: false };
-  Object.entries(defaults).forEach(([k, v]) => {
-    if (k === 'invert') els.invertToggle.checked = v;
-    else {
-      els.sliders[k].slider.value = v;
-      els.sliders[k].value.textContent = v + (els.sliders[k].unit || '');
-    }
-  });
-  window.obsidianClient.resetGeneralSettings(defaults);
-  applyGeneralSettings();
-};
+  const resetSettings = () => {
+    const defaults = { brightness: '100', contrast: '1', saturation: '1', grayscale: '0', hue: '0', sepia: '0', invert: false };
+    Object.entries(defaults).forEach(([k, v]) => {
+      if (k === 'invert') els.invertToggle.checked = v;
+      else {
+        els.sliders[k].slider.value = v;
+        els.sliders[k].value.textContent = v + (els.sliders[k].unit || '');
+      }
+    });
+    window.obsidianClient.resetGeneralSettings(defaults);
+    applyGeneralSettings();
+  };
 
-const applyBackground = () => {
-  const url = els.background.value.trim();
-  url ? window.obsidianClient.injectBackground(url) : window.obsidianClient.removeBackground();
-  window.obsidianClient.saveSettings({ background: url });
-};
+  const applyBackground = () => {
+    const url = els.background.value.trim();
+    url ? window.obsidianClient.injectBackground(url) : window.obsidianClient.removeBackground();
+    window.obsidianClient.saveSettings({ background: url });
+  };
 
-const loadScriptsList = () => {
-  const allScripts = window.obsidianClient.getAllScripts();
-  const disabledScripts = window.obsidianClient.getDisabledScripts();
-  els.scriptCount.textContent = allScripts.filter(s => !disabledScripts.includes(s)).length;
-  els.scriptsContainer.innerHTML = allScripts.length ? allScripts.map(s => `
+  const loadScriptsList = () => {
+    const allScripts = window.obsidianClient.getAllScripts();
+    const disabledScripts = window.obsidianClient.getDisabledScripts();
+    els.scriptCount.textContent = allScripts.filter(s => !disabledScripts.includes(s)).length;
+    els.scriptsContainer.innerHTML = allScripts.length ? allScripts.map(s => `
     <div class="option-item">
       <span>${s.replace('.js', '')}</span>
       <label class="toggle">
@@ -860,19 +1087,19 @@ const loadScriptsList = () => {
         <span class="slider"></span>
       </label>
     </div>`).join('') : '<div style="padding: 10px 0; color: rgba(255,255,255,0.6); font-size: 13px;">No scripts found</div>';
-  document.querySelectorAll('.script-toggle').forEach(t => t.addEventListener('change', e => {
-    window.obsidianClient.toggleScript(e.target.dataset.script, e.target.checked);
-    setTimeout(() => {
-      els.scriptCount.textContent = window.obsidianClient.getAllScripts().filter(s => !window.obsidianClient.getDisabledScripts().includes(s)).length;
-      window.obsidianClient.closeMenu();
-      window.obsidianClient.reloadMainWindow();
-    }, 200);
-  }));
-};
+    document.querySelectorAll('.script-toggle').forEach(t => t.addEventListener('change', e => {
+      window.obsidianClient.toggleScript(e.target.dataset.script, e.target.checked);
+      setTimeout(() => {
+        els.scriptCount.textContent = window.obsidianClient.getAllScripts().filter(s => !window.obsidianClient.getDisabledScripts().includes(s)).length;
+        window.obsidianClient.closeMenu();
+        window.obsidianClient.reloadMainWindow();
+      }, 200);
+    }));
+  };
 
-const loadCSSList = () => {
-  const { cssList = [], kchCSSTitle = '' } = window.obsidianClient.getSettings();
-  els.cssListContainer.innerHTML = cssList.length ? cssList.map(entry => `
+  const loadCSSList = () => {
+    const { cssList = [], kchCSSTitle = '' } = window.obsidianClient.getSettings();
+    els.cssListContainer.innerHTML = cssList.length ? cssList.map(entry => `
     <div class="css-item" data-id="${entry.id}">
       <span>${entry.name}</span>
       <label class="toggle css-item-toggle">
@@ -884,186 +1111,218 @@ const loadCSSList = () => {
         <i class="fas fa-times css-item-remove" data-id="${entry.id}"></i>
       `}
     </div>`).join('') : '<div style="padding: 10px 0; color: rgba(255,255,255,0.6); font-size: 13px;">No custom CSS added</div>';
-  document.querySelectorAll('.css-toggle').forEach(t => t.addEventListener('change', e => {
-    if (!kchCSSTitle) window.obsidianClient.toggleCustomCSS(e.target.dataset.id, e.target.checked);
-  }));
-  document.querySelectorAll('.css-item-remove').forEach(r => r.addEventListener('click', e => {
-    const cssEntry = cssList.find(entry => entry.id === e.target.dataset.id);
-    if (cssEntry && !cssEntry.isDefault) {
-      window.obsidianClient.removeCustomCSS(e.target.dataset.id);
-      loadCSSList();
-    }
-  }));
-  document.querySelectorAll('.css-item-edit').forEach(e => e.addEventListener('click', ev => {
-    if (kchCSSTitle) return;
-    const cssEntry = cssList.find(entry => entry.id === ev.target.dataset.id);
-    if (cssEntry && !cssEntry.isDefault) {
-      editingCSSId = cssEntry.id;
-      els.cssDropdownTitle.textContent = `Edit Custom CSS: ${cssEntry.name}`;
-      els.cssNameInput.value = cssEntry.name || '';
-      els.cssUrlInput.value = cssEntry.url || '';
-      els.cssCodeInput.value = cssEntry.code || '';
-      els.cssDropdown.classList.add('active');
-      els.cssWarning.classList.remove('active');
-      els.cssWarning.textContent = '';
-    }
-  }));
-};
-
-const applyUISettings = () => {
-  const settings = {
-    opacity: els.opacity.slider.value,
-    scale: els.scale.slider.value,
-    chatMode: els.chatMode.value,
-    openingAnimations: els.openingAnimations.checked,
+    document.querySelectorAll('.css-toggle').forEach(t => t.addEventListener('change', e => {
+      if (!kchCSSTitle) window.obsidianClient.toggleCustomCSS(e.target.dataset.id, e.target.checked);
+    }));
+    document.querySelectorAll('.css-item-remove').forEach(r => r.addEventListener('click', e => {
+      const cssEntry = cssList.find(entry => entry.id === e.target.dataset.id);
+      if (cssEntry && !cssEntry.isDefault) {
+        window.obsidianClient.removeCustomCSS(e.target.dataset.id);
+        loadCSSList();
+      }
+    }));
+    document.querySelectorAll('.css-item-edit').forEach(e => e.addEventListener('click', ev => {
+      if (kchCSSTitle) return;
+      const cssEntry = cssList.find(entry => entry.id === ev.target.dataset.id);
+      if (cssEntry && !cssEntry.isDefault) {
+        editingCSSId = cssEntry.id;
+        els.cssDropdownTitle.textContent = `Edit Custom CSS: ${cssEntry.name}`;
+        els.cssNameInput.value = cssEntry.name || '';
+        els.cssUrlInput.value = cssEntry.url || '';
+        els.cssCodeInput.value = cssEntry.code || '';
+        els.cssDropdown.classList.add('active');
+        els.cssWarning.classList.remove('active');
+        els.cssWarning.textContent = '';
+      }
+    }));
   };
-  window.obsidianClient.injectUICSS(settings);
-  window.obsidianClient.saveSettings(settings);
-};
 
-const loadSettings = () => {
-  const settings = window.obsidianClient.getSettings();
-  els.background.value = settings.background || '';
-  els.devTools.checked = settings.devToolsEnabled || false;
-  els.kchCSSTitle.textContent = settings.kchCSSTitle || 'None';
-  els.kchCSSBar.classList.toggle('hidden', !settings.kchCSSTitle);
-  Object.entries(els.sliders).forEach(([k, { slider, value, unit = '' }]) => {
-    slider.value = settings[k] || slider.defaultValue;
-    value.textContent = slider.value + unit;
+  document.querySelector('.menu-item[data-tab="analytics"]').addEventListener('click', () => {
+    window.obsidianClient.openAnalyticsWindow();
   });
-  els.opacity.slider.value = settings.opacity || '100';
-  els.opacity.value.textContent = els.opacity.slider.value + '%';
-  els.scale.slider.value = settings.scale || '100';
-  els.scale.value.textContent = els.scale.slider.value + '%';
-  els.chatMode.value = settings.chatMode || 'default';
-  els.invertToggle.checked = settings.invert || false;
-  els.startupBehaviour.value = settings.startupBehaviour || 'windowed';
-  els.keyDisp.textContent = settings.menuToggleKey || 'ShiftRight';
-  els.joinKeyDisp.textContent = settings.joinLinkKey || 'J';
-  els.openingAnimations.checked = settings.openingAnimations || false;
-  window.obsidianClient.setDevTools(els.devTools.checked);
-  window.obsidianClient.setMenuToggleKey(els.keyDisp.textContent);
-  window.obsidianClient.setJoinLinkKey(els.joinKeyDisp.textContent);
-  applyGeneralSettings();
-  applyBackground();
-  applyUISettings();
-  loadScriptsList();
-  loadCSSList();
-};
 
-els.devTools.addEventListener('change', () => window.obsidianClient.saveSettings({ devToolsEnabled: els.devTools.checked }));
-els.background.addEventListener('input', debounce(applyBackground, 100));
-Object.values(els.sliders).forEach(({ slider, value, unit = '' }) => slider.addEventListener('input', () => {
-  value.textContent = slider.value + unit;
-  applyGeneralSettings();
-}));
-els.invertToggle.addEventListener('change', applyGeneralSettings);
-els.resetButton.addEventListener('click', resetSettings);
-els.openScriptsFolder.addEventListener('click', () => window.obsidianClient.openScriptsFolder());
-els.startupBehaviour.addEventListener('change', () => window.obsidianClient.saveSettings({ startupBehaviour: els.startupBehaviour.value }));
-els.kchCSSRemove.addEventListener('click', () => window.obsidianClient.removeKCHCSS());
-els.cssGallery.addEventListener('click', () => window.obsidianClient.openCSSGallery());
-els.openingAnimations.addEventListener('change', applyUISettings);
+  const applyUISettings = () => {
+    const settings = {
+      opacity: els.opacity.slider.value,
+      scale: els.scale.slider.value,
+      chatMode: els.chatMode.value,
+      openingAnimations: els.openingAnimations.checked,
+    };
+    window.obsidianClient.injectUICSS(settings);
+    window.obsidianClient.saveSettings(settings);
+  };
 
-els.addCSSBar.addEventListener('click', () => {
-  if (window.obsidianClient.getSettings().kchCSSTitle) return;
-  editingCSSId = null;
-  els.cssDropdownTitle.textContent = 'Add Custom CSS';
-  els.cssDropdown.classList.toggle('active');
-  els.cssNameInput.value = els.cssUrlInput.value = els.cssCodeInput.value = els.cssWarning.textContent = '';
-  els.cssWarning.classList.remove('active');
-});
-
-els.cssDropdownCancel.addEventListener('click', () => {
-  els.cssDropdown.classList.remove('active');
-  els.cssNameInput.value = els.cssUrlInput.value = els.cssCodeInput.value = els.cssWarning.textContent = '';
-  els.cssWarning.classList.remove('active');
-  editingCSSId = null;
-  els.cssDropdownTitle.textContent = 'Add Custom CSS';
-});
-
-els.cssDropdownSave.addEventListener('click', () => {
-  const { kchCSSTitle } = window.obsidianClient.getSettings();
-  if (kchCSSTitle) return;
-  const name = els.cssNameInput.value.trim();
-  const url = els.cssUrlInput.value.trim();
-  const code = els.cssCodeInput.value.trim();
-  if (!name) return els.cssWarning.textContent = 'Please provide a CSS name.', els.cssWarning.classList.add('active');
-  if (url && code) return els.cssWarning.textContent = 'Please provide either a CSS URL or CSS code, not both.', els.cssWarning.classList.add('active');
-  if (!url && !code) return els.cssWarning.textContent = 'Please provide either a CSS URL or CSS code.', els.cssWarning.classList.add('active');
-  editingCSSId ? window.obsidianClient.updateCustomCSS({ id: editingCSSId, name, url, code }) : window.obsidianClient.addCustomCSS({ name, url, code, enabled: true });
-  els.cssDropdown.classList.remove('active');
-  els.cssNameInput.value = els.cssUrlInput.value = els.cssCodeInput.value = els.cssWarning.textContent = '';
-  els.cssWarning.classList.remove('active');
-  editingCSSId = null;
-  els.cssDropdownTitle.textContent = 'Add Custom CSS';
-  loadCSSList();
-});
-
-els.keyBtn.addEventListener('click', () => {
-  settingKey = true;
-  els.keyBtn.textContent = 'Press a key...';
-});
-
-els.joinKeyBtn.addEventListener('click', () => {
-  settingJoinKey = true;
-  els.joinKeyBtn.textContent = 'Press a key...';
-});
-
-document.addEventListener('keydown', e => {
-  if (e.code === els.keyDisp.textContent) window.obsidianClient.closeMenu();
-  else if (e.code === els.joinKeyDisp.textContent) window.obsidianClient.toggleJoinLinkModal();
-  if (settingKey) {
-    e.preventDefault();
-    els.keyDisp.textContent = e.code;
-    window.obsidianClient.setMenuToggleKey(e.code);
-    els.keyBtn.textContent = 'Set Key';
-    settingKey = false;
-  } else if (settingJoinKey) {
-    e.preventDefault();
-    els.joinKeyDisp.textContent = e.code;
-    window.obsidianClient.setJoinLinkKey(e.code);
-    els.joinKeyBtn.textContent = 'Set Key';
-    settingJoinKey = false;
-  }
-});
-
-els.opacity.slider.addEventListener('input', () => {
-  els.opacity.value.textContent = els.opacity.slider.value + '%';
-  applyUISettings();
-});
-
-els.scale.slider.addEventListener('input', () => {
-  els.scale.value.textContent = els.scale.slider.value + '%';
-  applyUISettings();
-});
-
-els.chatMode.addEventListener('change', applyUISettings);
-
-window.obsidianClient.onUpdateKCHCSSState(state => {
-  els.kchCSSTitle.textContent = state.kchCSSTitle || 'None';
-  els.kchCSSBar.classList.toggle('hidden', !state.kchCSSTitle);
-  loadCSSList();
-});
-
-document.querySelectorAll('.menu-item').forEach(item => item.addEventListener('click', () => {
-  document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-  document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
-  item.classList.add('active');
-  document.getElementById(`${item.dataset.tab}-panel`)?.classList.add('active');
-  if (item.dataset.tab === 'scripts') loadScriptsList();
-  if (item.dataset.tab === 'css') {
+  const loadSettings = () => {
+    const settings = window.obsidianClient.getSettings();
+    els.background.value = settings.background || '';
+    els.devTools.checked = settings.devToolsEnabled || false;
+    els.kchCSSTitle.textContent = settings.kchCSSTitle || 'None';
+    els.kchCSSBar.classList.toggle('hidden', !settings.kchCSSTitle);
+    Object.entries(els.sliders).forEach(([k, { slider, value, unit = '' }]) => {
+      slider.value = settings[k] || slider.defaultValue;
+      value.textContent = slider.value + unit;
+    });
+    els.opacity.slider.value = settings.opacity || '100';
+    els.opacity.value.textContent = els.opacity.slider.value + '%';
+    els.scale.slider.value = settings.scale || '100';
+    els.scale.value.textContent = els.scale.slider.value + '%';
+    els.chatMode.value = settings.chatMode || 'default';
+    els.invertToggle.checked = settings.invert || false;
+    els.startupBehaviour.value = settings.startupBehaviour || 'windowed';
+    els.keyDisp.textContent = settings.menuToggleKey || 'ShiftRight';
+    els.joinKeyDisp.textContent = settings.joinLinkKey || 'J';
+    els.openingAnimations.checked = settings.openingAnimations || false;
+    window.obsidianClient.setDevTools(els.devTools.checked);
+    window.obsidianClient.setMenuToggleKey(els.keyDisp.textContent);
+    window.obsidianClient.setJoinLinkKey(els.joinKeyDisp.textContent);
+    applyGeneralSettings();
+    applyBackground();
+    applyUISettings();
+    loadScriptsList();
     loadCSSList();
-    els.cssDropdown.classList.remove('active');
-    els.cssWarning.classList.remove('active');
-    els.cssWarning.textContent = '';
+  };
+
+  els.devTools.addEventListener('change', () => window.obsidianClient.saveSettings({ devToolsEnabled: els.devTools.checked }));
+  els.background.addEventListener('input', debounce(applyBackground, 100));
+  Object.values(els.sliders).forEach(({ slider, value, unit = '' }) => slider.addEventListener('input', () => {
+    value.textContent = slider.value + unit;
+    applyGeneralSettings();
+  }));
+  els.invertToggle.addEventListener('change', applyGeneralSettings);
+  els.resetButton.addEventListener('click', resetSettings);
+  els.openScriptsFolder.addEventListener('click', () => window.obsidianClient.openScriptsFolder());
+  els.startupBehaviour.addEventListener('change', () => window.obsidianClient.saveSettings({ startupBehaviour: els.startupBehaviour.value }));
+  els.kchCSSRemove.addEventListener('click', () => window.obsidianClient.removeKCHCSS());
+  els.cssGallery.addEventListener('click', () => window.obsidianClient.openCSSGallery());
+  els.openingAnimations.addEventListener('change', applyUISettings);
+
+  els.addCSSBar.addEventListener('click', () => {
+    if (window.obsidianClient.getSettings().kchCSSTitle) return;
     editingCSSId = null;
     els.cssDropdownTitle.textContent = 'Add Custom CSS';
-  }
-}));
+    els.cssDropdown.classList.toggle('active');
+    els.cssNameInput.value = els.cssUrlInput.value = els.cssCodeInput.value = els.cssWarning.textContent = '';
+    els.cssWarning.classList.remove('active');
+  });
 
-loadSettings();
+  els.cssDropdownCancel.addEventListener('click', () => {
+    els.cssDropdown.classList.remove('active');
+    els.cssNameInput.value = els.cssUrlInput.value = els.cssCodeInput.value = els.cssWarning.textContent = '';
+    els.cssWarning.classList.remove('active');
+    editingCSSId = null;
+    els.cssDropdownTitle.textContent = 'Add Custom CSS';
+  });
+
+  els.cssDropdownSave.addEventListener('click', () => {
+    const { kchCSSTitle } = window.obsidianClient.getSettings();
+    if (kchCSSTitle) return;
+    const name = els.cssNameInput.value.trim();
+    const url = els.cssUrlInput.value.trim();
+    const code = els.cssCodeInput.value.trim();
+    if (!name) return els.cssWarning.textContent = 'Please provide a CSS name.', els.cssWarning.classList.add('active');
+    if (url && code) return els.cssWarning.textContent = 'Please provide either a CSS URL or CSS code, not both.', els.cssWarning.classList.add('active');
+    if (!url && !code) return els.cssWarning.textContent = 'Please provide either a CSS URL or CSS code.', els.cssWarning.classList.add('active');
+    editingCSSId ? window.obsidianClient.updateCustomCSS({ id: editingCSSId, name, url, code }) : window.obsidianClient.addCustomCSS({ name, url, code, enabled: true });
+    els.cssDropdown.classList.remove('active');
+    els.cssNameInput.value = els.cssUrlInput.value = els.cssCodeInput.value = els.cssWarning.textContent = '';
+    els.cssWarning.classList.remove('active');
+    editingCSSId = null;
+    els.cssDropdownTitle.textContent = 'Add Custom CSS';
+    loadCSSList();
+  });
+
+  els.keyBtn.addEventListener('click', () => {
+    settingKey = true;
+    els.keyBtn.textContent = 'Press a key...';
+  });
+
+  els.joinKeyBtn.addEventListener('click', () => {
+    settingJoinKey = true;
+    els.joinKeyBtn.textContent = 'Press a key...';
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.code === els.keyDisp.textContent) window.obsidianClient.closeMenu();
+    else if (e.code === els.joinKeyDisp.textContent) window.obsidianClient.toggleJoinLinkModal();
+    if (settingKey) {
+      e.preventDefault();
+      els.keyDisp.textContent = e.code;
+      window.obsidianClient.setMenuToggleKey(e.code);
+      els.keyBtn.textContent = 'Set Key';
+      settingKey = false;
+    } else if (settingJoinKey) {
+      e.preventDefault();
+      els.joinKeyDisp.textContent = e.code;
+      window.obsidianClient.setJoinLinkKey(e.code);
+      els.joinKeyBtn.textContent = 'Set Key';
+      settingJoinKey = false;
+    }
+  });
+
+  els.opacity.slider.addEventListener('input', () => {
+    els.opacity.value.textContent = els.opacity.slider.value + '%';
+    applyUISettings();
+  });
+
+  els.scale.slider.addEventListener('input', () => {
+    els.scale.value.textContent = els.scale.slider.value + '%';
+    applyUISettings();
+  });
+
+  els.chatMode.addEventListener('change', applyUISettings);
+
+  window.obsidianClient.onUpdateKCHCSSState(state => {
+    els.kchCSSTitle.textContent = state.kchCSSTitle || 'None';
+    els.kchCSSBar.classList.toggle('hidden', !state.kchCSSTitle);
+    loadCSSList();
+  });
+
+  document.querySelectorAll('.menu-item').forEach(item => item.addEventListener('click', () => {
+    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById(`${item.dataset.tab}-panel`)?.classList.add('active');
+    if (item.dataset.tab === 'scripts') loadScriptsList();
+    if (item.dataset.tab === 'css') {
+      loadCSSList();
+      els.cssDropdown.classList.remove('active');
+      els.cssWarning.classList.remove('active');
+      els.cssWarning.textContent = '';
+      editingCSSId = null;
+      els.cssDropdownTitle.textContent = 'Add Custom CSS';
+    }
+  }));
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.menu-item').forEach(item => {
+      item.classList.remove('active');
+    });
+    document.querySelectorAll('.content-panel, .tab-content').forEach(content => {
+      content.classList.remove('active');
+    });
+
+    document.querySelector(`.menu-item[data-tab="${tabId}"]`).classList.add('active');
+    const panelId = tabId === 'analytics' ? 'analytics' : `${tabId}-panel`;
+    document.getElementById(panelId).classList.add('active');
+
+    if (tabId === 'analytics') {
+      analyticsUI.loadAnalytics();
+    }
+  }
+
+  document.querySelectorAll('.menu-item').forEach(item => {
+    item.addEventListener('click', () => {
+      switchTab(item.dataset.tab);
+    });
+  });
+
+  window.addEventListener('load', () => {
+    switchTab('general');
+  });
+
+  loadSettings();
 </script>
+<script src="src/analyticsUI.js"></script>
 </body>
 
 </html>
