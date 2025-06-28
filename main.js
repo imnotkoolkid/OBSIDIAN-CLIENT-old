@@ -117,7 +117,7 @@ const saveSettings = (settings) => {
   );
 };
 
-const loadAnalytics = async () => {
+const getAnalytics = async () => {
   try {
     const analyticsExist = await fs
       .access(paths.analytics)
@@ -141,7 +141,7 @@ const loadAnalytics = async () => {
 
 const saveAnalytics = async (analyticsData) => {
   try {
-    const analyticsCache = await loadAnalytics();
+    const analyticsCache = await getAnalytics();
     let date = new Date();
     const formattedDate = `${date.getFullYear()}-${String(
       date.getMonth() + 1
@@ -523,6 +523,11 @@ app.whenReady().then(async () => {
   );
   ipcMain.on("update-custom-css", (_, cssEntry) =>
     cssHandler.updateCustomCSS(cssEntry)
+  );
+
+  ipcMain.on(
+    "get-analytics",
+    async (e) => (e.returnValue = await getAnalytics())
   );
 });
 

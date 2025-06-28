@@ -38,5 +38,5 @@ contextBridge.exposeInMainWorld("obsidianClient", {
   setJoinLinkKey: (key) => ipcRenderer.send("set-join-link-key", key),
   onUpdateKCHCSSState: (callback) =>
     ipcRenderer.on("update-kch-css-state", (event, state) => callback(state)),
-  saveAnalytics: (data) => ipcRenderer.invoke("save-analytics", data),
+  getAnalytics: () => ipcRenderer.sendSync("get-analytics"),
 });
