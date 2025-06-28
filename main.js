@@ -66,7 +66,8 @@ let mainWindow,
   joinLinkKey = "J",
   devToolsEnabled = false,
   preloadedScripts = [],
-  startupBehaviour = "windowed";
+  startupBehaviour = "windowed",
+  analytics;
 let cssHandler;
 
 const ensureFolders = async () => {
@@ -146,7 +147,7 @@ const createWindow = () => {
   });
 
   cssHandler = new CSSHandler(mainWindow, loadSettings, saveSettings);
-  const analytics = new Analytics(mainWindow, paths);
+  analytics = new Analytics(mainWindow, paths);
   analytics.init();
 
   mainWindow.webContents.setUserAgent(
@@ -335,7 +336,6 @@ app.whenReady().then(async () => {
     });
   });
 
-  // IPC Handlers
   ipcMain.on("open-css-gallery", () => {
     const cssGalleryWindow = new BrowserWindow({
       width: 1050,
@@ -447,6 +447,10 @@ app.whenReady().then(async () => {
   ipcMain.on(
     "get-analytics",
     async (e) => (e.returnValue = await analytics.getAnalytics())
+  );
+  ipcMain.on(
+    "get-analytics-for-display",
+    async (e) => (e.returnValue = await analytics.getAnalyticsForDisplay())
   );
 });
 
