@@ -19,7 +19,6 @@ const {
 const CSSHandler = require("./src/csshandler");
 const ScriptHandler = require("./src/scripthandler");
 const Analytics = require("./src/analytics");
-const { pathToFileURL } = require("url");
 
 const paths = {
   userData: app.getPath("userData"),
@@ -74,7 +73,6 @@ const ensureFolders = async () => {
   try {
     await fs.mkdir(paths.clientData, { recursive: true });
     await fs.mkdir(paths.scripts, { recursive: true });
-    await fs.mkdir(path.join(paths.clientData, "assets"), { recursive: true });
   } catch (err) {
     console.error("Error creating folders:", err);
   }
@@ -285,15 +283,6 @@ const toggleJoinLinkModal = () => {
 
 app.whenReady().then(async () => {
   app.setAsDefaultProtocolClient("obsidian");
-
-  protocol.handle("obsidian", ({ url }) => {
-    const assetName = new URL(url).searchParams.get("asset");
-    const localPath = path.join(paths.clientData, "assets", assetName);
-    if (fs.existsSync(localPath)) {
-      return net.fetch(pathToFileURL(localPath).toString());
-    }
-    return new Response(null, { status: 404 });
-  });
 
   await ensureFolders();
   await loadSettings();
