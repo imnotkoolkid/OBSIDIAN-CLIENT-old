@@ -18,6 +18,7 @@ const {
 } = require("./rpc");
 const CSSHandler = require("./src/csshandler");
 const ScriptHandler = require("./src/scripthandler");
+const Analytics = require("./src/analytics");
 const { pathToFileURL } = require("url");
 
 const paths = {
@@ -61,11 +62,7 @@ let mainWindow,
   joinLinkModal,
   settingsCache,
   settingsWriteTimer,
-  analyticsWriteTimer,
-  currentGameCode,
-  joinTime;
-
-let menuToggleKey = "ShiftRight",
+  menuToggleKey = "ShiftRight",
   joinLinkKey = "J",
   devToolsEnabled = false,
   preloadedScripts = [],
@@ -117,65 +114,6 @@ const saveSettings = (settings) => {
   );
 };
 
-const getAnalytics = async () => {
-  try {
-    const analyticsExist = await fs
-      .access(paths.analytics)
-      .then(() => true)
-      .catch(() => false);
-    if (analyticsExist) {
-      const data = await fs.readFile(paths.analytics, "utf8");
-      return JSON.parse(data) || { score: [], playtime: [] };
-    } else {
-      const defaultAnalytics = { score: [], playtime: [] };
-      await fs.writeFile(paths.analytics, JSON.stringify(defaultAnalytics));
-      return defaultAnalytics;
-    }
-  } catch (err) {
-    console.error("Error loading analytics:", err);
-    const defaultAnalytics = { score: [], playtime: [] };
-    await fs.writeFile(paths.analytics, JSON.stringify(defaultAnalytics));
-    return defaultAnalytics;
-  }
-};
-
-const saveAnalytics = async (analyticsData) => {
-  try {
-    const analyticsCache = await getAnalytics();
-    let date = new Date();
-    const formattedDate = `${date.getFullYear()}-${String(
-      date.getMonth() + 1
-    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-
-    let day = analyticsCache.playtime.find((d) => d.date === formattedDate);
-
-    if (!day) {
-      day = {
-        date: formattedDate,
-        playtime: analyticsData.duration || 0,
-        games: [analyticsData],
-      };
-      analyticsCache.playtime.push(day);
-    } else {
-      day.playtime += analyticsData.duration || 0;
-      day.games.push(analyticsData);
-    }
-
-    clearTimeout(analyticsWriteTimer);
-    analyticsWriteTimer = setTimeout(
-      () =>
-        fs
-          .writeFile(paths.analytics, JSON.stringify(analyticsCache))
-          .catch((err) => console.error("Error saving analytics:", err)),
-      500
-    );
-
-    console.log(`Analytics saved for game: ${analyticsData.gameCode}`);
-  } catch (error) {
-    console.error("Failed to save analytics:", error);
-  }
-};
-
 const createSplashWindow = () => {
   splashWindow = new BrowserWindow({
     width: 1400,
@@ -208,6 +146,8 @@ const createWindow = () => {
   });
 
   cssHandler = new CSSHandler(mainWindow, loadSettings, saveSettings);
+  const analytics = new Analytics(mainWindow, paths);
+  analytics.init();
 
   mainWindow.webContents.setUserAgent(
     `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.116 Safari/537.36 Electron/10.4.7 ObsidianClient`
@@ -237,33 +177,13 @@ const createWindow = () => {
     openInPopup(url);
   });
 
-  const handleNavigation = (event, url) => {
+  mainWindow.webContents.on("did-navigate-in-page", (event, url) => {
     updateDiscordPresence(url);
+  });
 
-    if (url.includes("/games/")) {
-      const parts = url.split("~");
-      currentGameCode = parts[parts.length - 1];
-      joinTime = Date.now();
-      console.log(`Joined game: ${currentGameCode}`);
-    } else {
-      if (currentGameCode) {
-        const duration = Date.now() - joinTime;
-        console.log(`Left game: ${currentGameCode}. Duration: ${duration}ms`);
-
-        saveAnalytics({
-          gameCode: currentGameCode,
-          duration: duration,
-          date: new Date().toISOString(),
-        });
-
-        currentGameCode = null;
-        joinTime = null;
-      }
-    }
-  };
-
-  mainWindow.webContents.on("did-navigate-in-page", handleNavigation);
-  mainWindow.webContents.on("did-navigate", handleNavigation);
+  mainWindow.webContents.on("did-navigate", (event, url) => {
+    updateDiscordPresence(url);
+  });
 
   function openInPopup(url) {
     const popup = new BrowserWindow({
@@ -403,7 +323,7 @@ app.whenReady().then(async () => {
       splashWindow.webContents.send("update-progress", 50);
       await cssHandler.applyConfigWithProgress(await loadSettings());
       splashWindow.webContents.send("update-progress", 100);
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 3600));
       mainWindow.show();
       splashWindow.close();
       splashWindow = null;
@@ -524,10 +444,9 @@ app.whenReady().then(async () => {
   ipcMain.on("update-custom-css", (_, cssEntry) =>
     cssHandler.updateCustomCSS(cssEntry)
   );
-
   ipcMain.on(
     "get-analytics",
-    async (e) => (e.returnValue = await getAnalytics())
+    async (e) => (e.returnValue = await analytics.getAnalytics())
   );
 });
 
