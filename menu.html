@@ -818,13 +818,7 @@
             <span class="range-value" id="hue-value">0</span>
           </div>
         </div>
-        <div class="option-item">
-          <span class="option-label">Invert</span>
-          <label class="toggle">
-            <input type="checkbox" id="invert-toggle">
-            <span class="slider"></span>
-          </label>
-        </div>
+ 
         <div class="option-item">
           <span class="option-label">Sepia</span>
           <div class="range-slider">
@@ -978,15 +972,16 @@
             <span class="key-display" id="join-key-display">J</span>
           </div>
         </div>
-        <div class="option-item">
-          <span>Startup Behaviour</span>
-          <div class="select-container">
-            <select id="startup-behaviour">
-              <option value="windowed">Windowed</option>
-              <option value="fullscreen">Full Screen</option>
-            </select>
-          </div>
-        </div>
+<div class="option-item">
+  <span>Startup Behaviour</span>
+  <div class="select-container">
+    <select id="startup-behaviour">
+      <option value="windowed">Windowed</option>
+      <option value="maximized">Maximized</option>
+      <option value="fullscreen">Full Screen</option>
+    </select>
+  </div>
+</div>
       </div>
       <div class="content-panel" id="about-panel">
         <h2>About Obsidian Client</h2>
@@ -1016,7 +1011,6 @@
       hue: { slider: document.getElementById('hue-slider'), value: document.getElementById('hue-value') },
       sepia: { slider: document.getElementById('sepia-slider'), value: document.getElementById('sepia-value') },
     },
-    invertToggle: document.getElementById('invert-toggle'),
     resetButton: document.getElementById('reset-settings'),
     startupBehaviour: document.getElementById('startup-behaviour'),
     kchCSSBar: document.getElementById('kch-css-bar'),
@@ -1050,20 +1044,16 @@
 
   const applyGeneralSettings = () => {
     const settings = Object.entries(els.sliders).reduce((acc, [k, { slider: { value } }]) => ({ ...acc, [k]: value }), {});
-    settings.invert = els.invertToggle.checked;
-    const css = `body, html { filter: brightness(${settings.brightness}%) contrast(${settings.contrast}) saturate(${settings.saturation}) grayscale(${settings.grayscale}) hue-rotate(${settings.hue}deg) invert(${settings.invert ? 1 : 0}) sepia(${settings.sepia}); }`;
+    const css = `body, html { filter: brightness(${settings.brightness}%) contrast(${settings.contrast}) saturate(${settings.saturation}) grayscale(${settings.grayscale}) hue-rotate(${settings.hue}deg) sepia(${settings.sepia}); }`;
     window.obsidianClient.injectGeneralCSS(css);
     window.obsidianClient.saveSettings(settings);
   };
 
   const resetSettings = () => {
-    const defaults = { brightness: '100', contrast: '1', saturation: '1', grayscale: '0', hue: '0', sepia: '0', invert: false };
+    const defaults = { brightness: '100', contrast: '1', saturation: '1', grayscale: '0', hue: '0', sepia: '0' };
     Object.entries(defaults).forEach(([k, v]) => {
-      if (k === 'invert') els.invertToggle.checked = v;
-      else {
-        els.sliders[k].slider.value = v;
-        els.sliders[k].value.textContent = v + (els.sliders[k].unit || '');
-      }
+      els.sliders[k].slider.value = v;
+      els.sliders[k].value.textContent = v + (els.sliders[k].unit || '');
     });
     window.obsidianClient.resetGeneralSettings(defaults);
     applyGeneralSettings();
@@ -1167,8 +1157,7 @@
     els.scale.slider.value = settings.scale || '100';
     els.scale.value.textContent = els.scale.slider.value + '%';
     els.chatMode.value = settings.chatMode || 'default';
-    els.invertToggle.checked = settings.invert || false;
-    els.startupBehaviour.value = settings.startupBehaviour || 'windowed';
+    els.startupBehaviour.value = settings.startupBehaviour || 'maximized';
     els.keyDisp.textContent = settings.menuToggleKey || 'ShiftRight';
     els.joinKeyDisp.textContent = settings.joinLinkKey || 'J';
     els.openingAnimations.checked = settings.openingAnimations || false;
@@ -1188,7 +1177,6 @@
     value.textContent = slider.value + unit;
     applyGeneralSettings();
   }));
-  els.invertToggle.addEventListener('change', applyGeneralSettings);
   els.resetButton.addEventListener('click', resetSettings);
   els.openScriptsFolder.addEventListener('click', () => window.obsidianClient.openScriptsFolder());
   els.startupBehaviour.addEventListener('change', () => window.obsidianClient.saveSettings({ startupBehaviour: els.startupBehaviour.value }));
