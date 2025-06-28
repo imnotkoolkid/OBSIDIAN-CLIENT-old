@@ -90,6 +90,7 @@ const loadSettings = async () => {
       : JSON.parse(await fs.readFile(paths.defaultSettings, "utf8"));
     if (!settingsExist)
       await fs.writeFile(paths.settings, JSON.stringify(settingsCache));
+    startupBehaviour = settingsCache.startupBehaviour || "windowed";
     return settingsCache;
   } catch (err) {
     console.error("Error loading settings:", err);
@@ -97,6 +98,7 @@ const loadSettings = async () => {
       await fs.readFile(paths.defaultSettings, "utf8")
     );
     await fs.writeFile(paths.settings, JSON.stringify(settingsCache));
+    startupBehaviour = settingsCache.startupBehaviour || "windowed";
     return settingsCache;
   }
 };
@@ -314,14 +316,17 @@ app.whenReady().then(async () => {
       await cssHandler.applyConfigWithProgress(await loadSettings());
       splashWindow.webContents.send("update-progress", 100);
       await new Promise((resolve) => setTimeout(resolve, 3600));
+      if (startupBehaviour === "maximized") {
+        mainWindow.maximize();
+      }
       mainWindow.show();
       splashWindow.close();
       splashWindow = null;
       await mainWindow.webContents.insertCSS(`
-        html, body {
-          height: 100% !important;
-        }
-      `);
+      html, body {
+        height: 100% !important;
+      }
+    `);
     });
   });
 
