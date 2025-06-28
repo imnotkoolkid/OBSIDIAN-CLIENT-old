@@ -73,7 +73,6 @@ class Analytics {
       const parts = url.split("~");
       this.currentGameCode = parts[parts.length - 1];
       this.joinTime = Date.now();
-      console.log(`Joined game: ${this.currentGameCode}`);
     } else {
       if (this.currentGameCode) {
         const duration = Date.now() - this.joinTime;
