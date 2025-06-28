@@ -29,7 +29,7 @@ contextBridge.exposeInMainWorld("obsidianClient", {
   injectUICSS: (settings) => ipcRenderer.send("inject-ui-css", settings),
   addCustomCSS: (cssEntry) => ipcRenderer.send("add-custom-css", cssEntry),
   toggleCustomCSS: (id, enabled) =>
-    ipcRenderer.send("toggle-custom-css", id, enabled),
+    ipcMain.send("toggle-custom-css", id, enabled),
   removeCustomCSS: (id) => ipcRenderer.send("remove-custom-css", id),
   updateCustomCSS: (cssEntry) =>
     ipcRenderer.send("update-custom-css", cssEntry),
@@ -39,4 +39,5 @@ contextBridge.exposeInMainWorld("obsidianClient", {
   onUpdateKCHCSSState: (callback) =>
     ipcRenderer.on("update-kch-css-state", (event, state) => callback(state)),
   getAnalytics: () => ipcRenderer.sendSync("get-analytics"),
+  getAnalyticsForDisplay: () => ipcRenderer.sendSync("get-analytics-for-display"),
 });
