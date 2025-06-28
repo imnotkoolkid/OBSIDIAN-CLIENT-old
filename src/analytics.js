@@ -63,6 +63,7 @@ class Analytics {
         500
       );
 
+      console.log(`Analytics saved for game: ${analyticsData.gameCode}`);
     } catch (error) {
       console.error("Failed to save analytics:", error);
     }
@@ -73,9 +74,11 @@ class Analytics {
       const parts = url.split("~");
       this.currentGameCode = parts[parts.length - 1];
       this.joinTime = Date.now();
+      console.log(`Joined game: ${this.currentGameCode}`);
     } else {
       if (this.currentGameCode) {
         const duration = Date.now() - this.joinTime;
+        console.log(`Left game: ${this.currentGameCode}. Duration: ${duration}ms`);
 
         this.saveAnalytics({
           gameCode: this.currentGameCode,
@@ -96,6 +99,53 @@ class Analytics {
     this.mainWindow.webContents.on("did-navigate", (event, url) =>
       this.handleNavigation(event, url)
     );
+  }
+
+  async getAnalyticsForDisplay() {
+    const data = await this.getAnalytics();
+    const last7Days = this.getLast7Days();
+    const playtimeMap = {};
+    let totalPlaytime = 0;
+    let totalGames = 0;
+    let activeDays = 0;
+
+    last7Days.forEach((date) => {
+      playtimeMap[date] = 0;
+    });
+
+    if (data.playtime && Array.isArray(data.playtime)) {
+      data.playtime.forEach((entry) => {
+        if (last7Days.includes(entry.date)) {
+          playtimeMap[entry.date] = entry.playtime || 0;
+          totalPlaytime += entry.playtime || 0;
+          if (entry.games && Array.isArray(entry.games)) {
+            totalGames += entry.games.length;
+          }
+          if (entry.playtime > 0) {
+            activeDays++;
+          }
+        }
+      });
+    }
+
+    return {
+      last7Days,
+      playtimeMap,
+      totalPlaytime,
+      totalGames,
+      activeDays,
+    };
+  }
+
+  getLast7Days() {
+    const days = [];
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      days.push(date.toISOString().split("T")[0]);
+    }
+    return days;
   }
 }
 
