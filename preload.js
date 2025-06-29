@@ -28,8 +28,7 @@ contextBridge.exposeInMainWorld("obsidianClient", {
   removeKCHCSS: () => ipcRenderer.send("remove-kch-css"),
   injectUICSS: (settings) => ipcRenderer.send("inject-ui-css", settings),
   addCustomCSS: (cssEntry) => ipcRenderer.send("add-custom-css", cssEntry),
-  toggleCustomCSS: (id, enabled) =>
-    ipcMain.send("toggle-custom-css", id, enabled),
+toggleCustomCSS: (id, enabled) => ipcRenderer.send("toggle-custom-css", id, enabled),
   removeCustomCSS: (id) => ipcRenderer.send("remove-custom-css", id),
   updateCustomCSS: (cssEntry) =>
     ipcRenderer.send("update-custom-css", cssEntry),
