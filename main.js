@@ -159,9 +159,9 @@ const createWindow = () => {
   analytics.init();
 
 
-const shortcuts = new Shortcuts(mainWindow, () => settingsCache, paths);
-shortcuts.toggleClientMenu = toggleClientMenu.bind(this);
-shortcuts.toggleJoinLinkModal = toggleJoinLinkModal.bind(this);
+  const shortcuts = new Shortcuts(mainWindow, () => settingsCache, paths);
+  shortcuts.toggleClientMenu = toggleClientMenu.bind(this);
+  shortcuts.toggleJoinLinkModal = toggleJoinLinkModal.bind(this);
 
   mainWindow.webContents.setUserAgent(
     `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.116 Safari/537.36 Electron/10.4.7 ObsidianClient`
@@ -399,9 +399,10 @@ app.whenReady().then(async () => {
     await cssHandler.injectKCHCSS(url, title);
     mainWindow.webContents.send("update-kch-css-state", { kchCSSTitle: title });
   });
-  ipcMain.on("remove-kch-css", async () => {
+  ipcMain.handle("remove-kch-css", async () => {
     await cssHandler.removeKCHCSS();
-    mainWindow.webContents.send("update-kch-css-state", { kchCSSTitle: "" });
+    const settings = await loadSettings();
+    return { kchCSSTitle: settings.kchCSSTitle || '' };
   });
   ipcMain.on("inject-ui-css", (_, settings) =>
     cssHandler.injectUICSS(settings)
