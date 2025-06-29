@@ -1,1 +1,132 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: transparent;
+            min-height: 100vh;
+        }
+
+        .popup-container {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.3);
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .popup-container.show {
+            top: 20px;
+            transform: translateX(-50%) scale(1);
+            opacity: 1;
+        }
+
+        .popup {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 30px;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100px;
+            transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .popup-container.show .popup {
+            width: 275px;
+        }
+
+        .popup-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .popup-icon svg {
+            width: 14px;
+            height: 14px;
+            fill: #333;
+        }
+
+        .popup-text {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.3s ease 0.2s;
+        }
+
+        .popup-container.show .popup-text {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            }
+            50% {
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            }
+            100% {
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        .popup-container.show .popup {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="popup-container" id="popupContainer">
+        <div class="popup">
+            <div class="popup-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M21 19V7c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                </svg>
+            </div>
+            <div class="popup-text">Screenshot saved to Captures</div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            const container = document.getElementById('popupContainer');
+            requestAnimationFrame(() => {
+                container.classList.add('show');
+            });
+            setTimeout(() => {
+                container.classList.remove('show');
+                setTimeout(() => {
+                    window.close();
+                }, 600);
+            }, 1355);
+        });
+    </script>
+</body>
+</html>
