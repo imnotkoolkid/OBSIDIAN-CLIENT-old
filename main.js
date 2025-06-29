@@ -20,6 +20,7 @@ const {
 const CSSHandler = require("./src/csshandler");
 const ScriptHandler = require("./src/scripthandler");
 const Analytics = require("./src/analytics");
+const Shortcuts = require("./src/shortcuts");
 
 const paths = {
   userData: app.getPath("userData"),
@@ -70,6 +71,8 @@ let mainWindow,
   startupBehaviour = "windowed",
   analytics;
 let cssHandler;
+
+
 
 const ensureFolders = async () => {
   try {
@@ -155,6 +158,11 @@ const createWindow = () => {
   analytics = new Analytics(mainWindow, paths);
   analytics.init();
 
+
+const shortcuts = new Shortcuts(mainWindow, () => settingsCache, paths);
+shortcuts.toggleClientMenu = toggleClientMenu.bind(this);
+shortcuts.toggleJoinLinkModal = toggleJoinLinkModal.bind(this);
+
   mainWindow.webContents.setUserAgent(
     `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.116 Safari/537.36 Electron/10.4.7 ObsidianClient`
   );
@@ -216,49 +224,6 @@ const createWindow = () => {
     });
   }
 
-  let lastInput = 0;
-  mainWindow.webContents.on("before-input-event", async (e, input) => {
-    const now = Date.now();
-    if (now - lastInput < 50) return;
-    lastInput = now;
-
-    if (input.code === "F11") {
-      mainWindow.setFullScreen(!mainWindow.isFullScreen());
-      e.preventDefault();
-    } else if (
-      input.code === settingsCache.menuToggleKey &&
-      input.type === "keyDown"
-    ) {
-      toggleClientMenu();
-      e.preventDefault();
-    } else if (
-      input.code === settingsCache.joinLinkKey &&
-      input.type === "keyDown"
-    ) {
-      toggleJoinLinkModal();
-      e.preventDefault();
-    } else if (
-      settingsCache.devToolsEnabled &&
-      (input.code === "F12" ||
-        (input.control && input.shift && input.code === "KeyI"))
-    ) {
-      mainWindow.webContents.openDevTools();
-      e.preventDefault();
-    } else if (input.code === "F5") {
-      mainWindow.webContents.reload();
-      e.preventDefault();
-    } else if (input.code === "F2" && input.type === "keyDown") {
-      try {
-        const screenshot = await mainWindow.webContents.capturePage();
-        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-        const screenshotPath = path.join(paths.captured, `screenshot-${timestamp}.png`);
-        await fs.writeFile(screenshotPath, screenshot.toPNG());
-      } catch (err) {
-        console.error("Error capturing screenshot:", err);
-      }
-      e.preventDefault();
-    }
-  });
 
   mainWindow.webContents.on("did-finish-load", () => cssHandler.applyConfig());
 };
