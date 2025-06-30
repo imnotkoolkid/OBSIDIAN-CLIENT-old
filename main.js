@@ -153,7 +153,13 @@ const createWindow = () => {
     fullscreen: startupBehaviour === "fullscreen",
     show: false,
   });
-
+mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.insertCSS(`
+      html, body {
+        height: 100% !important;
+      }
+    `);
+  });
   cssHandler = new CSSHandler(mainWindow, loadSettings, saveSettings);
   analytics = new Analytics(mainWindow, paths);
   analytics.init();
@@ -302,11 +308,6 @@ app.whenReady().then(async () => {
       mainWindow.show();
       splashWindow.close();
       splashWindow = null;
-      await mainWindow.webContents.insertCSS(`
-      html, body {
-        height: 100% !important;
-      }
-    `);
     });
   });
 
