@@ -1,39 +1,24 @@
-const fs = require('fs');
+const { ipcRenderer } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
-class ScriptHandler {
-  constructor(scriptsPath) {
-    this.scriptsPath = scriptsPath;
-  }
+const scriptsPath = ipcRenderer.sendSync('get-scripts-path');
+const loadedScripts = [];
 
-  getScriptsPath() {
-    return this.scriptsPath;
-  }
-
-  getAllScripts() {
-    try {
-      return fs.readdirSync(this.scriptsPath).filter(f => f.endsWith('.js'));
-    } catch (err) {
-      console.error('Error reading scripts folder:', err);
-      return [];
-    }
-  }
-
-  getDisabledScripts(settings) {
-    return settings.disabledScripts || [];
-  }
-
-  getNewDisabledScripts(settings, script, enabled) {
-    let disabledScripts = settings.disabledScripts || [];
-    if (enabled) {
-      return disabledScripts.filter(s => s !== script);
-    } else {
-      if (!disabledScripts.includes(script)) {
-        return [...disabledScripts, script];
+try {
+  const disabledScripts = ipcRenderer.sendSync('get-disabled-scripts') || [];
+  fs.readdirSync(scriptsPath).filter(f => f.endsWith('.js')).forEach(file => {
+    if (!disabledScripts.includes(file)) {
+      try {
+        require(path.join(scriptsPath, file));
+        loadedScripts.push(file);
+      } catch (err) {
+        console.error(`Error loading script ${file}:`, err);
       }
-      return disabledScripts;
     }
-  }
+  });
+} catch (err) {
+  console.error('Error reading scripts folder:', err);
 }
 
-module.exports = ScriptHandler;
+ipcRenderer.send('set-preloaded-scripts', loadedScripts);
