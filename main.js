@@ -310,7 +310,15 @@ app.whenReady().then(async () => {
       splashWindow = null;
     });
   });
-
+ipcMain.handle('execute-script', async (event, scriptContent) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    try {
+      await mainWindow.webContents.executeJavaScript(scriptContent, true);
+    } catch (err) {
+      console.error('Error executing script:', err);
+    }
+  }
+});
   ipcMain.on("open-css-gallery", () => {
     const cssGalleryWindow = new BrowserWindow({
       width: 1050,
@@ -358,10 +366,9 @@ app.whenReady().then(async () => {
     "get-scripts-path",
     (e) => (e.returnValue = scriptHandler.getScriptsPath())
   );
-  ipcMain.on(
-    "get-all-scripts",
-    async (e) => (e.returnValue = await scriptHandler.getAllScripts())
-  );
+ipcMain.on('get-all-scripts', async (e) => {
+  e.returnValue = await scriptHandler.getAllScripts();
+});
   ipcMain.on(
     "get-disabled-scripts",
     (e) => (e.returnValue = scriptHandler.getDisabledScripts(settingsCache))
@@ -429,7 +436,26 @@ app.whenReady().then(async () => {
     async (e) => (e.returnValue = await analytics.getAnalyticsForDisplay())
   );
 });
-
+ipcMain.handle('execute-script', async (event, scriptContent) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    try {
+      const wrappedScript = `
+        (function() {
+          if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            (function() { ${scriptContent} })();
+          } else {
+            document.addEventListener('DOMContentLoaded', function() {
+              (function() { ${scriptContent} })();
+            });
+          }
+        })();
+      `;
+      await mainWindow.webContents.executeJavaScript(wrappedScript, true);
+    } catch (err) {
+      console.error('Error executing script:', err);
+    }
+  }
+});
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     cleanupDiscordRPC();
