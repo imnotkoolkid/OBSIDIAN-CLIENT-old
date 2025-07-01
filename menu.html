@@ -370,7 +370,7 @@
       border-color: var(--primary);
     }
 
-    .css-gallery-bar {
+    .kch-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -383,7 +383,7 @@
       transition: background 0.3s;
     }
 
-    .css-gallery-bar:hover {
+    .kch-bar:hover {
       background: rgba(20, 10, 30, 0.8);
     }
 
@@ -870,7 +870,7 @@
           <label class="input-label">Background Image URL</label>
           <input type="text" id="background-input" placeholder="https://example.com/background.jpg">
         </div>
-        <div class="css-gallery-bar" id="css-gallery-bar">
+        <div class="kch-bar" id="css-gallery-bar">
           <span class="css-gallery-text">KCH CSS Gallery</span>
           <i class="fas fa-plus css-gallery-icon"></i>
         </div>
@@ -902,6 +902,10 @@
         <h2>Scripts Manager</h2>
         <div class="option-item">
           <span>Loaded Scripts: <span id="loaded-scripts-count">0</span></span>
+        </div>
+        <div class="kch-bar" id="kch-scripts-bar">
+          <span class="css-gallery-text">KCH Scripts Gallery</span>
+          <i class="fas fa-plus css-gallery-icon"></i>
         </div>
         <div class="option-item">
           <span>Open Scripts Folder</span>
@@ -1031,6 +1035,7 @@
       cssWarning: document.getElementById('css-warning'),
       cssGallery: document.getElementById('css-gallery-bar'),
       openingAnimations: document.getElementById('opening-animations-toggle'),
+      kchScriptsBar: document.getElementById('kch-scripts-bar'),
     };
 
     let editingCSSId = null;
@@ -1190,7 +1195,7 @@
     });
     els.cssGallery.addEventListener('click', () => window.obsidianClient.openCSSGallery());
     els.openingAnimations.addEventListener('change', applyUISettings);
-
+    els.kchScriptsBar.addEventListener('click', () => window.obsidianClient.openScriptsGallery());
     els.addCSSBar.addEventListener('click', () => {
       if (window.obsidianClient.getSettings().kchCSSTitle) return;
       editingCSSId = null;
