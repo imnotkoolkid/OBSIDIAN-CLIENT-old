@@ -176,7 +176,7 @@ const createWindow = () => {
     clientMenu?.isDestroyed() || clientMenu?.close();
     joinLinkModal?.isDestroyed() || joinLinkModal?.close();
   });
-mainWindow.webContents.on('did-finish-load', () => {
+  mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.insertCSS(`
       html, body {
         height: 100% !important;
@@ -330,7 +330,21 @@ app.whenReady().then(async () => {
     cssGalleryWindow.loadFile("kch/css.html");
     cssGalleryWindow.setMenuBarVisibility(false);
   });
-
+  ipcMain.on("open-scripts-gallery", () => {
+    const scriptsGalleryWindow = new BrowserWindow({
+      width: 1050,
+      height: 600,
+      title: "KCH Scripts Gallery",
+      icon: path.join(__dirname, "kch/assets/kch.ico"),
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        preload: path.join(__dirname, "preload.js"),
+      },
+    });
+    scriptsGalleryWindow.loadFile("kch/scripts.html");
+    scriptsGalleryWindow.setMenuBarVisibility(false);
+  });
   ipcMain.on("join-game", (_, url) => {
     if (
       (url.startsWith("https://kirka.io/games/") ||
@@ -424,6 +438,15 @@ app.whenReady().then(async () => {
   ipcMain.on("update-custom-css", (_, cssEntry) =>
     cssHandler.updateCustomCSS(cssEntry)
   );
+  ipcMain.on("download-script", async (event, { url, name, content }) => {
+    try {
+      const filePath = path.join(paths.scripts, `${name}.js`);
+      await fs.writeFile(filePath, content);
+      mainWindow.reload()
+    } catch (error) {
+      console.error(`Failed to save script ${name}:`, error);
+    }
+  });
   ipcMain.on(
     "get-analytics",
     async (e) => (e.returnValue = await analytics.getAnalytics())
