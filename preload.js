@@ -41,4 +41,7 @@ contextBridge.exposeInMainWorld("obsidianClient", {
   getAnalyticsForDisplay: () => ipcRenderer.sendSync("get-analytics-for-display"),
   openScriptsGallery: () => ipcRenderer.send("open-scripts-gallery"),
   downloadScript: (scriptData) => ipcRenderer.send("download-script", scriptData),
+  openAssetsGallery: () => ipcRenderer.send("open-assets-gallery"),
+  openTexturesGallery: () => ipcRenderer.send("open-textures-gallery"),
+  openCrosshairsGallery: () => ipcRenderer.send("open-crosshairs-gallery"),
 });
