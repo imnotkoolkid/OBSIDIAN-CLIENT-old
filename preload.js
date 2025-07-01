@@ -39,4 +39,6 @@ contextBridge.exposeInMainWorld("obsidianClient", {
     ipcRenderer.on("update-kch-css-state", (event, state) => callback(state)),
   getAnalytics: () => ipcRenderer.sendSync("get-analytics"),
   getAnalyticsForDisplay: () => ipcRenderer.sendSync("get-analytics-for-display"),
+  openScriptsGallery: () => ipcRenderer.send("open-scripts-gallery"),
+  downloadScript: (scriptData) => ipcRenderer.send("download-script", scriptData),
 });
