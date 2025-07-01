@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kirka Scripts</title>
+    <link rel="icon" type="image/png" href="assets/kch.webp">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <meta property="og:title" content="Kirka Scripts">
+    <meta property="og:description" content="Discover and download Scripts for Kirka">
+    <meta property="og:image" content="assets/kch.webp">
+    <meta property="og:url" content="https://kirkacommunityhub.netlify.app/assets">
+    <meta property="og:type" content="website">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --dark: #10131a;
+            --light: #f8f9fa;
+            --card-bg: rgba(25, 30, 45, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --pastel-purple: #d8b9ff;
+            --yellow-info: #f1c40f;
+            --like-pink: #ff69b4;
+            --success-green: #2ecc71;
+            --error-red: #e74c3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--dark);
+            background-image: radial-gradient(circle at 10% 20%, rgba(108, 92, 231, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 90% 80%, rgba(162, 155, 254, 0.15) 0%, transparent 50%);
+            color: var(--light);
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1500px;
+            z-index: 1000;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            background: rgba(16, 19, 26, 0.8);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 25px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo img {
+            height: 32px;
+        }
+
+        .logo h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        nav ul {
+            display: flex;
+            gap: 25px;
+            list-style: none;
+        }
+
+        nav a {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        nav a.active {
+            color: var(--primary);
+        }
+
+        nav a:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.3s;
+        }
+
+        nav a.active:after,
+        nav a:hover:after {
+            width: 100%;
+        }
+
+        main {
+            padding-top: 100px;
+        }
+
+        .hero {
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .hero h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #ff79c6, #8a70ff, #50c4fa, #a0e8b7, #ffd166, #ff79c6);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: soapFilm 22s ease infinite;
+            font-weight: 700;
+        }
+
+        @keyframes soapFilm {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .hero p {
+            max-width: 700px;
+            margin: 0 auto 30px;
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        .scripts-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        .script-bar {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            margin-bottom: 4px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .script-bar:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .script-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .script-icon {
+            font-size: 24px;
+            color: var(--secondary);
+        }
+
+        .script-name {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .script-owner {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-left: 5px;
+        }
+
+        .script-owner a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .script-owner a:hover {
+            color: var(--pastel-purple);
+        }
+
+        .script-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-icon.liked {
+            background: var(--like-pink);
+            border-color: var(--like-pink);
+        }
+
+        .btn-icon.dropdown-toggle.active i {
+            transform: rotate(180deg);
+        }
+
+        .script-dropdown {
+            max-width: 900px;
+            margin: 0 0 15px 0;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: max-height 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+            position: absolute;
+        }
+
+        .script-dropdown.active {
+            max-height: 500px;
+            opacity: 1;
+            transform: translateY(3px);
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+        }
+
+        .script-dropdown-content {
+            flex: 1;
+            min-width: 0;
+            order: 1;
+        }
+
+        .script-dropdown-content p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        .script-dropdown-image {
+            max-width: 200px;
+            order: 2;
+        }
+
+        .script-dropdown-image img {
+            width: 100%;
+            border-radius: 8px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        footer {
+            padding: 30px 0;
+            text-align: center;
+            border-top: 1px solid var(--glass-border);
+            margin-top: 40px;
+        }
+
+        footer p {
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--secondary);
+            text-decoration: none;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .success-popup,
+        .error-popup {
+            position: fixed;
+            bottom: 6%;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%);
+            border-radius: 12px;
+            padding: 15px 20px;
+            color: var(--light);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(5px);
+            z-index: 3000;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .success-popup {
+            background: rgba(46, 204, 113, 0.15);
+            border: 1px solid var(--success-green);
+        }
+
+        .error-popup {
+            background: rgba(231, 76, 60, 0.15);
+            border: 1px solid var(--error-red);
+        }
+
+        .error-popup.active,
+        .success-popup.active {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .error-popup i,
+        .success-popup i {
+            font-size: 1.2rem;
+        }
+
+        .success-popup i {
+            color: var(--success-green);
+        }
+
+        .error-popup i {
+            color: var(--yellow-info);
+        }
+
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--light);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 10px;
+            z-index: 1001;
+        }
+
+        nav {
+            transition: transform 0.3s ease;
+        }
+
+        .preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .preview-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .preview-content {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 900px;
+            width: 90%;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            position: relative;
+            transform: scale(0.8);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .preview-modal.active .preview-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        @keyframes modalClose {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            to {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+        }
+
+        .preview-actions {
+            position: absolute;
+            top: 37px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .preview-content h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .preview-slider {
+            position: relative;
+            max-height: 70vh;
+            overflow: hidden;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: var(--card-bg);
+            backdrop-filter: blur(5px);
+        }
+
+        .preview-slider img {
+            width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #000;
+            transform-origin: center;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+            display: block;
+        }
+
+        .preview-slider img.active,
+        .preview-slider img.loaded {
+            opacity: 1;
+        }
+
+        .preview-slider .image-label {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+            text-align: center;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .preview-slider .image-error {
+            font-size: 1.2rem;
+            color: var(--light);
+            background: rgba(231, 76, 60, 0.15);
+            border: 1px solid var(--error-red);
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .preview-slider .image-error.active {
+            display: block;
+        }
+
+        .preview-slider .loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+            width: 100%;
+            max-width: 4rem;
+        }
+
+        .preview-slider.grabbing {
+            cursor: grabbing;
+        }
+
+        .preview-slider img.zoomed {
+            cursor: grab;
+        }
+
+        .preview-slider img.zoomed.grabbing {
+            cursor: grabbing;
+        }
+
+        .preview-content .owner-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: var(--pastel-purple);
+            text-decoration: none;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            transition: all 0.3s;
+        }
+
+        .preview-content .owner-link:hover {
+            color: var(--secondary);
+            opacity: 0.9;
+        }
+
+        .zoom-level {
+            background: var(--card-bg);
+            color: var(--light);
+            padding: 5px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            font-size: 0.9rem;
+            margin: 0 5px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .loader {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 6rem;
+            margin-top: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .loader:before,
+        .loader:after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            animation: pulsOut 1.8s ease-in-out infinite;
+            filter: drop-shadow(0 0 1rem rgba(255, 255, 255, 0.75));
+        }
+
+        .loader:before {
+            width: 100%;
+            padding-bottom: 100%;
+            box-shadow: inset 0 0 0 1rem #fff;
+            animation-name: pulsIn;
+        }
+
+        .loader:after {
+            width: calc(100% - 2rem);
+            padding-bottom: calc(100% - 2rem);
+            box-shadow: 0 0 0 0 #fff;
+        }
+
+        @keyframes pulsIn {
+            0% {
+                box-shadow: inset 0 0 0 1rem #fff;
+                opacity: 1;
+            }
+
+            50%,
+            100% {
+                box-shadow: inset 0 0 0 0 #fff;
+                opacity: 0;
+            }
+        }
+
+        @keyframes pulsOut {
+
+            0%,
+            50% {
+                box-shadow: 0 0 0 0 #fff;
+                opacity: 0;
+            }
+
+            100% {
+                box-shadow: 0 0 0 1rem #fff;
+                opacity: 1;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.084);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.388);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(16, 19, 26, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 4000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-overlay .loader {
+            width: 6rem;
+            max-width: 6rem;
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: block;
+            }
+
+            nav {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: rgba(16, 19, 26, 0.95);
+                border-radius: 0 0 16px 16px;
+                border: 1px solid var(--glass-border);
+                border-top: none;
+                transform: translateY(-100%);
+                visibility: hidden;
+                opacity: 0;
+            }
+
+            nav.active {
+                transform: translateY(0);
+                visibility: visible;
+                opacity: 1;
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                padding: 20px;
+                gap: 15px;
+            }
+
+            nav a {
+                font-size: 1.1rem;
+                padding: 10px;
+                width: 100%;
+                text-align: center;
+            }
+
+            header {
+                top: 10px;
+            }
+
+            .hero h2 {
+                font-size: 2rem;
+            }
+
+            .script-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .script-dropdown {
+                flex-direction: column;
+            }
+
+            .preview-content {
+                width: 95%;
+                padding: 20px;
+            }
+
+            .preview-slider,
+            .preview-slider img {
+                max-height: 50vh;
+            }
+
+            .preview-slider .image-error {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 585px) {
+            .preview-content h2 {
+                font-size: 1.6rem;
+                margin-bottom: 40px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <img src="assets/kirka.webp" alt="Kirka">
+                <h1>KCH Scripts</h1>
+            </div>
+            <button class="hamburger" id="hamburger">
+                <i class="fas fa-bars"></i>
+            </button>
+            <nav id="nav-menu">
+                <ul>
+                    <li><a href="#scripts" class="active">Scripts</a></li>
+                    <li><a href="#liked">Liked</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <section id="scripts" class="tab-content active">
+                <section class="hero">
+                    <h2>Scripts</h2>
+                    <p>Explore and download scripts to enhance your Kirka experience.</p>
+                </section>
+                <section class="scripts-container" id="scripts-gallery"></section>
+            </section>
+            <section id="liked" class="tab-content">
+                <section class="hero">
+                    <h2>Liked Items</h2>
+                    <p>View your favorite scripts.</p>
+                </section>
+                <section class="scripts-container" id="liked-gallery"></section>
+            </section>
+        </div>
+    </main>
+    <footer>
+        <div class="container">
+            <p>KCH Scripts • Not affiliated with Kirka.io</p>
+        </div>
+    </footer>
+    <div class="success-popup" id="success-popup">
+        <i class="fas fa-check-circle"></i>
+        <span>Action completed!</span>
+    </div>
+    <div class="error-popup" id="error-popup">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Error occurred!</span>
+    </div>
+    <div class="preview-modal" id="preview-modal">
+        <div class="preview-content">
+            <div class="preview-header">
+                <h2 id="preview-title"></h2>
+                <div class="preview-actions">
+                    <button class="btn-icon preview-btn" id="preview-zoom-out"><i class="fas fa-minus"></i></button>
+                    <span class="zoom-level" id="zoom-level-display">100%</span>
+                    <button class="btn-icon preview-btn" id="preview-zoom-in"><i class="fas fa-plus"></i></button>
+                    <button class="btn-icon preview-btn" id="preview-download" title="Download"><i
+                            class="fas fa-download"></i></button>
+                </div>
+            </div>
+            <div class="preview-slider">
+                <div class="image-label" id="preview-label"></div>
+                <img id="preview-image" src="" alt="Preview">
+                <div class="loader" id="preview-loader"></div>
+                <div class="image-error" id="image-error">Image not found!</div>
+            </div>
+            <a href="#" id="preview-owner" class="owner-link"></a>
+        </div>
+    </div>
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loader"></div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const scriptsGallery = document.getElementById('scripts-gallery');
+            const likedGallery = document.getElementById('liked-gallery');
+            const previewModal = document.getElementById('preview-modal');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const storageKey = 'likedItems';
+            let openDropdown = null;
+
+            const dataCache = { scripts: null };
+            const dataUrls = {
+                scripts: 'https://raw.githubusercontent.com/imnotkoolkid/KCH/refs/heads/main/data/script.json'
+            };
+
+            const showLoading = () => {
+                loadingOverlay.classList.add('active');
+            };
+
+            const hideLoading = () => {
+                loadingOverlay.classList.remove('active');
+            };
+
+            const getLikedItems = () => JSON.parse(localStorage.getItem(storageKey) || '[]');
+            const saveLikedItems = likedItems => localStorage.setItem(storageKey, JSON.stringify([...new Set(likedItems)]));
+
+            const showSuccessPopup = (message = 'Action completed!') => {
+                const popup = document.getElementById('success-popup');
+                popup.querySelector('span').textContent = message;
+                popup.classList.add('active');
+                setTimeout(() => popup.classList.remove('active'), 3000);
+            };
+
+            const showErrorPopup = (message = 'Error occurred!') => {
+                const popup = document.getElementById('error-popup');
+                popup.querySelector('span').textContent = message;
+                popup.classList.add('active');
+                setTimeout(() => popup.classList.remove('active'), 3000);
+            };
+
+            const fetchData = async () => {
+                if (dataCache.scripts) return dataCache.scripts;
+                showLoading();
+                try {
+                    const response = await fetch(dataUrls.scripts);
+                    if (!response.ok) throw new Error('Failed to load scripts');
+                    const data = await response.json();
+                    dataCache.scripts = data.scripts;
+                    return dataCache.scripts;
+                } catch (error) {
+                    console.error('Error loading scripts:', error);
+                    return null;
+                } finally {
+                    hideLoading();
+                }
+            };
+
+            const handleDownload = async (url, name) => {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Failed to fetch the file');
+                    const content = await response.text();
+                    window.obsidianClient.downloadScript({ url, name, content });
+                    showSuccessPopup(`Script ${name} downloaded to scripts folder!`);
+                } catch (error) {
+                    console.error('Download failed:', error);
+                    showErrorPopup('Download failed!');
+                }
+            };
+
+            const toggleLike = (name, button, type, element, isLikedSection = false) => {
+                let likedItems = getLikedItems();
+                const itemId = `${type}:${name}`;
+                const isLiked = likedItems.includes(itemId);
+                if (isLiked) {
+                    likedItems = likedItems.filter(n => n !== itemId);
+                    button.classList.remove('liked');
+                    button.querySelector('i').classList.replace('fas', 'far');
+                } else {
+                    likedItems.push(itemId);
+                    button.classList.add('liked');
+                    button.querySelector('i').classList.replace('far', 'fas');
+                }
+                saveLikedItems(likedItems);
+                if (isLikedSection && !isLiked) {
+                    element.remove();
+                    if (!likedGallery.querySelector('.script-bar')) {
+                        likedGallery.innerHTML = `<p style="text-align: center; opacity: 0.7;">No liked items yet.</p>`;
+                    }
+                }
+                renderLikedGallery();
+            };
+
+            const closeAllDropdowns = () => {
+                if (openDropdown) {
+                    openDropdown.classList.remove('active');
+                    const toggleButton = openDropdown.previousElementSibling.querySelector('.dropdown-toggle');
+                    toggleButton.classList.remove('active');
+                    openDropdown = null;
+                }
+            };
+
+            const createScriptBar = (script, isLiked, isLikedSection = false) => {
+                const scriptBar = document.createElement('div');
+                scriptBar.className = 'script-bar';
+                scriptBar.innerHTML = `
+                    <div class="script-info">
+                        <i class="fas fa-file-code script-icon"></i>
+                        <span class="script-name">${script.name}</span>
+                        <span class="script-owner">by <a href="${script.discord || '#'}" class="discord-link" data-discord="${script.discord || ''}">${script.owner}</a></span>
+                    </div>
+                    <div class="script-actions">
+                        <button class="btn-icon" data-download="${script.url}" title="Download"><i class="fas fa-download"></i></button>
+                        <button class="btn-icon ${isLiked ? 'liked' : ''}" data-name="${script.name}" title="Like"><i class="${isLiked ? 'fas' : 'far'} fa-heart"></i></button>
+                        <button class="btn-icon dropdown-toggle" title="Toggle Details"><i class="fas fa-chevron-down"></i></button>
+                    </div>
+                `;
+
+                const dropdown = document.createElement('div');
+                dropdown.className = 'script-dropdown';
+                dropdown.innerHTML = `
+                    <div class="script-dropdown-content">
+                        <p>${script.description}</p>
+                    </div>
+                    ${script.previewImage ? `
+                        <div class="script-dropdown-image">
+                            <img src="${script.previewImage}" alt="${script.name} Preview" class="preview-image">
+                        </div>
+                    ` : ''}
+                `;
+
+                const toggleDropdown = () => {
+                    if (openDropdown === dropdown) {
+                        closeAllDropdowns();
+                    } else {
+                        closeAllDropdowns();
+                        dropdown.classList.add('active');
+                        scriptBar.querySelector('.dropdown-toggle').classList.add('active');
+                        openDropdown = dropdown;
+                    }
+                };
+
+                scriptBar.addEventListener('click', toggleDropdown);
+                scriptBar.querySelector('.dropdown-toggle').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleDropdown();
+                });
+
+                scriptBar.querySelector('[data-download]').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    handleDownload(script.url, script.name);
+                });
+
+                const likeButton = scriptBar.querySelector('[data-name]');
+                likeButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleLike(script.name, likeButton, 'script', scriptBar, isLikedSection);
+                });
+
+                const discordLink = scriptBar.querySelector('.discord-link');
+                discordLink.addEventListener('click', (e) => {
+                    if (!script.discord) {
+                        e.preventDefault();
+                        showErrorPopup('User not found! No Discord contact provided.');
+                    }
+                });
+
+                const previewImage = dropdown.querySelector('.preview-image');
+                if (previewImage) {
+                    previewImage.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showPreview({ id: script.name, name: script.name, url: script.previewImage, owner: script.owner, discord: script.discord }, 'script');
+                    });
+                }
+
+                const container = isLikedSection ? likedGallery : scriptsGallery;
+                container.appendChild(scriptBar);
+                container.appendChild(dropdown);
+            };
+
+            const showPreview = (item) => {
+                const modal = document.getElementById('preview-modal');
+                const title = document.getElementById('preview-title');
+                const image = document.getElementById('preview-image');
+                const loader = document.getElementById('preview-loader');
+                const error = document.getElementById('image-error');
+                const label = document.getElementById('preview-label');
+                const ownerLink = document.getElementById('preview-owner');
+                const downloadButton = document.getElementById('preview-download');
+                const scrollPosition = window.scrollY;
+
+                image.src = '';
+                image.classList.remove('loaded');
+                loader.style.display = 'flex';
+                error.classList.remove('active');
+                if (item.url && item.url.trim()) {
+                    image.src = item.url;
+                    image.onload = () => {
+                        image.classList.add('loaded');
+                        loader.style.display = 'none';
+                        image.classList.add('active');
+                    };
+                    image.onerror = () => {
+                        image.classList.remove('loaded');
+                        loader.style.display = 'none';
+                        error.classList.add('active');
+                    };
+                } else {
+                    image.classList.remove('loaded');
+                    loader.style.display = 'none';
+                    error.classList.add('active');
+                }
+                label.textContent = 'Script Preview';
+
+                history.pushState(null, '', `#${item.id}`);
+                title.textContent = item.name;
+                ownerLink.textContent = `by ${item.owner}`;
+                ownerLink.href = item.discord || '#';
+                ownerLink.onclick = e => {
+                    if (!item.discord || item.discord.trim() === '' || item.discord === '#') {
+                        e.preventDefault();
+                        showErrorPopup('User not found! No Discord contact provided.');
+                        return false;
+                    }
+                };
+
+                downloadButton.onclick = () => handleDownload(item.url, item.name, 'image/webp');
+
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('active'), 10);
+                resetZoom();
+            };
+
+            const image = document.getElementById('preview-image');
+            const zoomInButton = document.getElementById('preview-zoom-in');
+            const zoomOutButton = document.getElementById('preview-zoom-out');
+            const zoomLevelDisplay = document.getElementById('zoom-level-display');
+            const previewSlider = document.querySelector('.preview-slider');
+            let zoomLevel = 1;
+            const maxZoom = 3;
+            const minZoom = 0.5;
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            const updateZoomDisplay = () => {
+                zoomLevelDisplay.textContent = `${Math.round(zoomLevel * 100)}%`;
+            };
+
+            const updateZoom = () => {
+                if (zoomLevel <= 1) {
+                    translateX = 0;
+                    translateY = 0;
+                }
+                image.style.transform = `scale(${zoomLevel}) translate(${translateX}px, ${translateY}px)`;
+                image.classList.toggle('zoomed', zoomLevel > 1);
+            };
+
+            const resetZoom = () => {
+                zoomLevel = 1;
+                translateX = 0;
+                translateY = 0;
+                updateZoom();
+                updateZoomDisplay();
+            };
+
+            zoomInButton.onclick = () => {
+                if (zoomLevel < maxZoom) {
+                    zoomLevel = Math.min(zoomLevel + 0.1, maxZoom);
+                    updateZoom();
+                    updateZoomDisplay();
+                }
+            };
+
+            zoomOutButton.onclick = () => {
+                if (zoomLevel > minZoom) {
+                    zoomLevel = Math.max(zoomLevel - 0.1, minZoom);
+                    updateZoom();
+                    updateZoomDisplay();
+                }
+            };
+
+            previewSlider.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                if (e.deltaY < 0 && zoomLevel < maxZoom) {
+                    zoomLevel = Math.min(zoomLevel + 0.1, maxZoom);
+                } else if (e.deltaY > 0 && zoomLevel > minZoom) {
+                    zoomLevel = Math.max(zoomLevel - 0.1, minZoom);
+                }
+                updateZoom();
+                updateZoomDisplay();
+            });
+
+            image.addEventListener('mousedown', (e) => {
+                if (zoomLevel > 1) {
+                    e.preventDefault();
+                    isDragging = true;
+                    startX = e.clientX - translateX;
+                    startY = e.clientY - translateY;
+                    image.classList.add('grabbing');
+                    previewSlider.classList.add('grabbing');
+                }
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    translateX = e.clientX - startX;
+                    translateY = e.clientY - startY;
+                    updateZoom();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                image.classList.remove('grabbing');
+                previewSlider.classList.remove('grabbing');
+            });
+
+            image.addEventListener('touchstart', (e) => {
+                if (zoomLevel > 1) {
+                    isDragging = true;
+                    startX = e.touches[0].clientX - translateX;
+                    startY = e.touches[0].clientY - translateY;
+                    image.classList.add('grabbing');
+                    previewSlider.classList.add('grabbing');
+                }
+            });
+
+            document.addEventListener('touchmove', (e) => {
+                if (isDragging) {
+                    translateX = e.touches[0].clientX - startX;
+                    translateY = e.touches[0].clientY - startY;
+                    updateZoom();
+                }
+            });
+
+            document.addEventListener('touchend', () => {
+                isDragging = false;
+                image.classList.remove('grabbing');
+                previewSlider.classList.remove('grabbing');
+            });
+
+            resetZoom();
+
+            previewModal.onclick = e => {
+                if (e.target === e.currentTarget) {
+                    const modal = e.currentTarget;
+                    const content = modal.querySelector('.preview-content');
+                    modal.classList.remove('active');
+                    content.style.animation = 'modalClose 0.3s ease forwards';
+                    setTimeout(() => {
+                        modal.style.display = 'none';
+                        content.style.animation = '';
+                        history.pushState(null, '', window.location.pathname);
+                        window.scrollTo(0, window.scrollY);
+                    }, 300);
+                }
+            };
+
+            const renderScripts = async () => {
+                scriptsGallery.innerHTML = '';
+                const scripts = await fetchData();
+                if (!scripts) {
+                    scriptsGallery.innerHTML = `<p style="text-align: center; opacity: 0.7;">Failed to load scripts.</p>`;
+                    return;
+                }
+                const likedItems = getLikedItems();
+                scripts.forEach(script => createScriptBar(script, likedItems.includes(`script:${script.name}`)));
+            };
+
+            const renderLikedGallery = async () => {
+                likedGallery.innerHTML = '';
+                const likedItems = getLikedItems();
+                const scripts = await fetchData() || [];
+                const likedScripts = scripts.filter(script => likedItems.includes(`script:${script.name}`));
+                if (likedScripts.length === 0) {
+                    likedGallery.innerHTML = `<p style="text-align: center; opacity: 0.7;">No liked items yet.</p>`;
+                    return;
+                }
+                likedScripts.forEach(script => createScriptBar(script, true, true));
+            };
+
+            const handleHash = async () => {
+                const hash = window.location.hash;
+                if (hash) {
+                    const id = hash.substring(1);
+                    const scripts = await fetchData() || [];
+                    const script = scripts.find(s => s.name === id);
+                    if (script && script.previewImage) {
+                        showPreview({ id: script.name, name: script.name, url: script.previewImage, owner: script.owner, discord: script.discord }, 'script');
+                        document.querySelectorAll('nav a').forEach(l => l.classList.remove('active'));
+                        document.querySelector('nav a[href="#scripts"]').classList.add('active');
+                        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                        document.getElementById('scripts').classList.add('active');
+                        await renderScripts();
+                    } else {
+                        window.location.hash = '';
+                    }
+                } else {
+                    previewModal.style.display = 'none';
+                }
+            };
+
+            await renderScripts();
+
+            document.querySelectorAll('nav a').forEach(link => {
+                link.addEventListener('click', async e => {
+                    e.preventDefault();
+                    document.querySelectorAll('nav a').forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    const targetId = link.getAttribute('href').substring(1);
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.toggle('active', content.id === targetId));
+                    if (targetId === 'liked') await renderLikedGallery();
+                });
+            });
+
+            const hamburger = document.getElementById('hamburger');
+            const navMenu = document.getElementById('nav-menu');
+
+            hamburger.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+                hamburger.innerHTML = navMenu.classList.contains('active')
+                    ? '<i class="fas fa-times"></i>'
+                    : '<i class="fas fa-bars"></i>';
+            });
+
+            navMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('active');
+                    hamburger.innerHTML = '<i class="fas fa-bars"></i>';
+                });
+            });
+
+            await handleHash();
+            window.addEventListener('hashchange', handleHash);
+        });
+    </script>
+</body>
+
+</html>
