@@ -1,4 +1,3 @@
-
 const {
   app,
   BrowserWindow,
@@ -22,6 +21,7 @@ const CSSHandler = require("./src/csshandler");
 const ScriptHandler = require("./src/scripthandler");
 const Analytics = require("./src/analytics");
 const Shortcuts = require("./src/shortcuts");
+const KCHWindowHandler = require("./src/kchwindowhandler");
 
 const paths = {
   userData: app.getPath("userData"),
@@ -72,8 +72,6 @@ let mainWindow,
   startupBehaviour = "windowed",
   analytics;
 let cssHandler;
-
-
 
 const ensureFolders = async () => {
   try {
@@ -159,7 +157,6 @@ const createWindow = () => {
   analytics = new Analytics(mainWindow, paths);
   analytics.init();
 
-
   const shortcuts = new Shortcuts(mainWindow, () => settingsCache, paths);
   shortcuts.toggleClientMenu = toggleClientMenu.bind(this);
   shortcuts.toggleJoinLinkModal = toggleJoinLinkModal.bind(this);
@@ -232,9 +229,41 @@ const createWindow = () => {
       }
     });
   }
+};
 
-
-  mainWindow.webContents.on("did-finish-load", () => cssHandler.applyConfig());
+const toggleClientMenu = () => {
+  if (clientMenu?.isDestroyed() === false) return clientMenu.close();
+  const { x, y, width, height } = mainWindow.getBounds();
+  clientMenu = new BrowserWindow({
+    width: 700,
+    height: 500,
+    parent: mainWindow,
+    modal: false,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    x: Math.round(x + (width - 700) / 2),
+    y: Math.round(y + (height - 500) / 2),
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, "preload.js"),
+      javascript: true,
+      images: false,
+    },
+  });
+  clientMenu.loadFile("menu.html");
+  const updatePosition = () =>
+    clientMenu?.isDestroyed() ||
+    clientMenu.setPosition(
+      Math.round(x + (width - 700) / 2),
+      Math.round(y + (height - 500) / 2)
+    );
+  mainWindow.on("move", updatePosition);
+  clientMenu.on("closed", () =>
+    mainWindow.removeListener("move", updatePosition)
+  );
+  clientMenu.on("blur", () => clientMenu?.close());
 };
 
 const toggleJoinLinkModal = () => {
@@ -285,6 +314,8 @@ app.whenReady().then(async () => {
   );
   splashWindow.webContents.send("update-progress", 0);
   createWindow();
+  const kchWindowHandler = new KCHWindowHandler(mainWindow, paths);
+  kchWindowHandler.registerHandlers();
   splashWindow.webContents.send("update-progress", 16);
 
   const deeplink = process.argv.find((arg) => arg.startsWith("obsidian:"));
@@ -311,40 +342,9 @@ app.whenReady().then(async () => {
       mainWindow.show();
       splashWindow.close();
       splashWindow = null;
-
     });
   });
 
-  ipcMain.on("open-css-gallery", () => {
-    const cssGalleryWindow = new BrowserWindow({
-      width: 1050,
-      height: 600,
-      title: "KCH CSS Gallery",
-      icon: path.join(__dirname, "kch/assets/kch.ico"),
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true,
-        preload: path.join(__dirname, "preload.js"),
-      },
-    });
-    cssGalleryWindow.loadFile("kch/css.html");
-    cssGalleryWindow.setMenuBarVisibility(false);
-  });
-  ipcMain.on("open-scripts-gallery", () => {
-    const scriptsGalleryWindow = new BrowserWindow({
-      width: 1050,
-      height: 600,
-      title: "KCH Scripts Gallery",
-      icon: path.join(__dirname, "kch/assets/kch.ico"),
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true,
-        preload: path.join(__dirname, "preload.js"),
-      },
-    });
-    scriptsGalleryWindow.loadFile("kch/scripts.html");
-    scriptsGalleryWindow.setMenuBarVisibility(false);
-  });
   ipcMain.on("join-game", (_, url) => {
     if (
       (url.startsWith("https://kirka.io/games/") ||
@@ -438,15 +438,6 @@ app.whenReady().then(async () => {
   ipcMain.on("update-custom-css", (_, cssEntry) =>
     cssHandler.updateCustomCSS(cssEntry)
   );
-  ipcMain.on("download-script", async (event, { url, name, content }) => {
-    try {
-      const filePath = path.join(paths.scripts, `${name}.js`);
-      await fs.writeFile(filePath, content);
-      mainWindow.reload()
-    } catch (error) {
-      console.error(`Failed to save script ${name}:`, error);
-    }
-  });
   ipcMain.on(
     "get-analytics",
     async (e) => (e.returnValue = await analytics.getAnalytics())
@@ -470,40 +461,5 @@ app.on("activate", () => {
     initDiscordRPC(mainWindow);
   }
 });
-
-const toggleClientMenu = () => {
-  if (clientMenu?.isDestroyed() === false) return clientMenu.close();
-  const { x, y, width, height } = mainWindow.getBounds();
-  clientMenu = new BrowserWindow({
-    width: 700,
-    height: 500,
-    parent: mainWindow,
-    modal: false,
-    frame: false,
-    transparent: true,
-    resizable: false,
-    x: Math.round(x + (width - 700) / 2),
-    y: Math.round(y + (height - 500) / 2),
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, "preload.js"),
-      javascript: true,
-      images: false,
-    },
-  });
-  clientMenu.loadFile("menu.html");
-  const updatePosition = () =>
-    clientMenu?.isDestroyed() ||
-    clientMenu.setPosition(
-      Math.round(x + (width - 700) / 2),
-      Math.round(y + (height - 500) / 2)
-    );
-  mainWindow.on("move", updatePosition);
-  clientMenu.on("closed", () =>
-    mainWindow.removeListener("move", updatePosition)
-  );
-  clientMenu.on("blur", () => clientMenu?.close());
-};
 
 setInterval(() => global.gc && global.gc(), 60000);
