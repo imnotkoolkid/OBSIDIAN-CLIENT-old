@@ -12,11 +12,7 @@ const {
 const { promises: fs } = require("fs");
 const path = require("path");
 const { get: fetch } = require("https");
-const {
-  initDiscordRPC,
-  updateDiscordPresence,
-  cleanupDiscordRPC,
-} = require("./rpc");
+const { initDiscordRPC, updateDiscordPresence, cleanupDiscordRPC } = require("./rpc");
 const CSSHandler = require("./src/csshandler");
 const ScriptHandler = require("./src/scripthandler");
 const Analytics = require("./src/analytics");
@@ -26,23 +22,9 @@ const KCHWindowHandler = require("./src/kchwindowhandler");
 const paths = {
   userData: app.getPath("userData"),
   documents: app.getPath("documents"),
-  clientData: path.join(
-    app.getPath("documents"),
-    "ObsidianClient",
-    "clientdata"
-  ),
-  settings: path.join(
-    app.getPath("documents"),
-    "ObsidianClient",
-    "clientdata",
-    "data.json"
-  ),
-  analytics: path.join(
-    app.getPath("documents"),
-    "ObsidianClient",
-    "clientdata",
-    "analytics.json"
-  ),
+  clientData: path.join(app.getPath("documents"), "ObsidianClient", "clientdata"),
+  settings: path.join(app.getPath("documents"), "ObsidianClient", "clientdata", "data.json"),
+  analytics: path.join(app.getPath("documents"), "ObsidianClient", "clientdata", "analytics.json"),
   defaultSettings: path.join(__dirname, "default_settings.json"),
   scripts: path.join(app.getPath("documents"), "ObsidianClient", "scripts"),
   captured: path.join(app.getPath("documents"), "ObsidianClient", "captured"),
@@ -99,9 +81,7 @@ const loadSettings = async () => {
     return settingsCache;
   } catch (err) {
     console.error("Error loading settings:", err);
-    settingsCache = JSON.parse(
-      await fs.readFile(paths.defaultSettings, "utf8")
-    );
+    settingsCache = JSON.parse(await fs.readFile(paths.defaultSettings, "utf8"));
     await fs.writeFile(paths.settings, JSON.stringify(settingsCache));
     startupBehaviour = settingsCache.startupBehaviour || "windowed";
     return settingsCache;
@@ -152,7 +132,13 @@ const createWindow = () => {
     fullscreen: startupBehaviour === "fullscreen",
     show: false,
   });
-
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.insertCSS(`
+      html, body {
+        height: 100% !important;
+      }
+    `);
+  });
   cssHandler = new CSSHandler(mainWindow, loadSettings, saveSettings);
   analytics = new Analytics(mainWindow, paths);
   analytics.init();
@@ -173,15 +159,7 @@ const createWindow = () => {
     clientMenu?.isDestroyed() || clientMenu?.close();
     joinLinkModal?.isDestroyed() || joinLinkModal?.close();
   });
-  mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.webContents.insertCSS(`
-      html, body {
-        height: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-    `);
-  });
+
   mainWindow.webContents.on("will-navigate", (event, url) => {
     if (
       url !== mainWindow.webContents.getURL() &&
@@ -229,41 +207,8 @@ const createWindow = () => {
       }
     });
   }
-};
 
-const toggleClientMenu = () => {
-  if (clientMenu?.isDestroyed() === false) return clientMenu.close();
-  const { x, y, width, height } = mainWindow.getBounds();
-  clientMenu = new BrowserWindow({
-    width: 700,
-    height: 500,
-    parent: mainWindow,
-    modal: false,
-    frame: false,
-    transparent: true,
-    resizable: false,
-    x: Math.round(x + (width - 700) / 2),
-    y: Math.round(y + (height - 500) / 2),
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, "preload.js"),
-      javascript: true,
-      images: false,
-    },
-  });
-  clientMenu.loadFile("menu.html");
-  const updatePosition = () =>
-    clientMenu?.isDestroyed() ||
-    clientMenu.setPosition(
-      Math.round(x + (width - 700) / 2),
-      Math.round(y + (height - 500) / 2)
-    );
-  mainWindow.on("move", updatePosition);
-  clientMenu.on("closed", () =>
-    mainWindow.removeListener("move", updatePosition)
-  );
-  clientMenu.on("blur", () => clientMenu?.close());
+  mainWindow.webContents.on("did-finish-load", () => cssHandler.applyConfig());
 };
 
 const toggleJoinLinkModal = () => {
@@ -314,9 +259,10 @@ app.whenReady().then(async () => {
   );
   splashWindow.webContents.send("update-progress", 0);
   createWindow();
+  splashWindow.webContents.send("update-progress", 16);
+
   const kchWindowHandler = new KCHWindowHandler(mainWindow, paths);
   kchWindowHandler.registerHandlers();
-  splashWindow.webContents.send("update-progress", 16);
 
   const deeplink = process.argv.find((arg) => arg.startsWith("obsidian:"));
   if (deeplink) {
@@ -461,5 +407,40 @@ app.on("activate", () => {
     initDiscordRPC(mainWindow);
   }
 });
+
+const toggleClientMenu = () => {
+  if (clientMenu?.isDestroyed() === false) return clientMenu.close();
+  const { x, y, width, height } = mainWindow.getBounds();
+  clientMenu = new BrowserWindow({
+    width: 700,
+    height: 500,
+    parent: mainWindow,
+    modal: false,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    x: Math.round(x + (width - 700) / 2),
+    y: Math.round(y + (height - 500) / 2),
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, "preload.js"),
+      javascript: true,
+      images: false,
+    },
+  });
+  clientMenu.loadFile("menu.html");
+  const updatePosition = () =>
+    clientMenu?.isDestroyed() ||
+    clientMenu.setPosition(
+      Math.round(x + (width - 700) / 2),
+      Math.round(y + (height - 500) / 2)
+    );
+  mainWindow.on("move", updatePosition);
+  clientMenu.on("closed", () =>
+    mainWindow.removeListener("move", updatePosition)
+  );
+  clientMenu.on("blur", () => clientMenu?.close());
+};
 
 setInterval(() => global.gc && global.gc(), 60000);
