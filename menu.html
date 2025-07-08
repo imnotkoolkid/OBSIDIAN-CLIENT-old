@@ -904,7 +904,7 @@
           <span>Loaded Scripts: <span id="loaded-scripts-count">0</span></span>
         </div>
         <div class="kch-bar" id="kch-scripts-bar">
-          <span class="css-gallery-text">KCH Scripts Gallery</span>
+          <span class="css-gallery-text">KCH Scripts</span>
           <i class="fas fa-plus css-gallery-icon"></i>
         </div>
         <div class="option-item">
@@ -986,6 +986,18 @@
             </select>
           </div>
         </div>
+        <div class="kch-bar" id="kch-assets-bar">
+          <span class="css-gallery-text">KCH Assets Gallery</span>
+          <i class="fas fa-plus css-gallery-icon"></i>
+        </div>
+        <div class="kch-bar" id="kch-textures-bar">
+          <span class="css-gallery-text">KCH Textures Gallery</span>
+          <i class="fas fa-plus css-gallery-icon"></i>
+        </div>
+        <div class="kch-bar" id="kch-crosshairs-bar">
+          <span class="css-gallery-text">KCH Crosshairs Gallery</span>
+          <i class="fas fa-plus css-gallery-icon"></i>
+        </div>
       </div>
       <div class="content-panel" id="about-panel">
         <h2>About Obsidian Client</h2>
@@ -1036,6 +1048,9 @@
       cssGallery: document.getElementById('css-gallery-bar'),
       openingAnimations: document.getElementById('opening-animations-toggle'),
       kchScriptsBar: document.getElementById('kch-scripts-bar'),
+      kchAssetsBar: document.getElementById('kch-assets-bar'),
+      kchTexturesBar: document.getElementById('kch-textures-bar'),
+      kchCrosshairsBar: document.getElementById('kch-crosshairs-bar'),
     };
 
     let editingCSSId = null;
@@ -1196,6 +1211,9 @@
     els.cssGallery.addEventListener('click', () => window.obsidianClient.openCSSGallery());
     els.openingAnimations.addEventListener('change', applyUISettings);
     els.kchScriptsBar.addEventListener('click', () => window.obsidianClient.openScriptsGallery());
+    els.kchAssetsBar.addEventListener('click', () => window.obsidianClient.openAssetsGallery());
+    els.kchTexturesBar.addEventListener('click', () => window.obsidianClient.openTexturesGallery());
+    els.kchCrosshairsBar.addEventListener('click', () => window.obsidianClient.openCrosshairsGallery());
     els.addCSSBar.addEventListener('click', () => {
       if (window.obsidianClient.getSettings().kchCSSTitle) return;
       editingCSSId = null;
