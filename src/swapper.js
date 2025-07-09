@@ -31,8 +31,9 @@ const initResourceSwapper = () => {
 
   protocol.registerFileProtocol("obsidian-swap", (request, callback) => {
     let filePath = decodeURIComponent(request.url.replace("obsidian-swap://", ""));
+    filePath = path.normalize(filePath);
     if (!fs.existsSync(filePath)) {
-      console.error("File not found:", filePath);
+      console.error(`File not found: ${filePath}`);
       callback({ error: -6 });
       return;
     }
@@ -46,7 +47,7 @@ const initResourceSwapper = () => {
       if (fs.statSync(filePath).isDirectory()) {
         walkSync(filePath, baseDir);
       } else {
-        const relativePath = path.relative(baseDir, filePath).replace(/\\/g, "/");
+        const relativePath = path.relative(baseDir, filePath).replace(/\\/g, "/").toLowerCase();
         const normalizedPath = path.normalize(filePath).replace(/\\/g, "/");
         swapMap[relativePath] = normalizedPath;
       }
@@ -58,10 +59,10 @@ const initResourceSwapper = () => {
     { urls: ["*://kirka.io/assets/*"] },
     (details, callback) => {
       const urlObj = new URL(details.url);
-      const assetPath = urlObj.pathname.replace("/assets/", "");
+      const assetPath = urlObj.pathname.replace("/assets/", "").toLowerCase();
       const ext = path.extname(assetPath).toLowerCase();
 
-      if ([".mp3", ".wav", ".jpg", ".png", ".gif", ".bmp"].includes(ext) && swapMap[assetPath]) {
+      if ([".mp3", ".wav", ".jpg", ".png", ".gif", ".webp", ".svg"].includes(ext) && swapMap[assetPath]) {
         const redirectURL = `obsidian-swap://${encodeURIComponent(swapMap[assetPath])}`;
         callback({ redirectURL });
       } else {
