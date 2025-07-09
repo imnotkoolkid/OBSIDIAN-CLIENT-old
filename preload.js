@@ -44,4 +44,5 @@ contextBridge.exposeInMainWorld("obsidianClient", {
   openAssetsGallery: () => ipcRenderer.send("open-assets-gallery"),
   openTexturesGallery: () => ipcRenderer.send("open-textures-gallery"),
   openCrosshairsGallery: () => ipcRenderer.send("open-crosshairs-gallery"),
+  openSwapperFolder: () => ipcRenderer.send("open-swapper-folder"),
 });
