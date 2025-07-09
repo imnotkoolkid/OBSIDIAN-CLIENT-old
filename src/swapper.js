@@ -1,15 +1,31 @@
 const { app, session, protocol } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const https = require("https");
 
 const initResourceSwapper = () => {
   const SWAP_FOLDER = path.join(app.getPath("documents"), "ObsidianClient", "swapper");
- 
-const folders = ["media", "img"];
-  folders.forEach((folder) => {
-    const folderPath = path.join(SWAP_FOLDER, folder);
+
+  const folders = [
+    { name: "media", helpUrl: "https://raw.githubusercontent.com/imnotkoolkid/OBSIDIAN-CLIENT/refs/heads/main/assets/media-swapper-help.txt" },
+    { name: "img", helpUrl: "https://raw.githubusercontent.com/imnotkoolkid/OBSIDIAN-CLIENT/refs/heads/main/assets/img-swapper-help.txt" }
+  ];
+
+  folders.forEach((folderConfig) => {
+    const folderPath = path.join(SWAP_FOLDER, folderConfig.name);
     if (!fs.existsSync(folderPath)) {
       fs.mkdirSync(folderPath, { recursive: true });
+      if (folderConfig.helpUrl) {
+        https.get(folderConfig.helpUrl, (res) => {
+          let data = "";
+          res.on("data", (chunk) => data += chunk);
+          res.on("end", () => {
+            fs.writeFileSync(path.join(folderPath, "help.txt"), data, "utf8");
+          });
+        }).on("error", (err) => {
+          console.error(`Error fetching help.txt for ${folderConfig.name}:`, err);
+        });
+      }
     }
   });
 
