@@ -5,7 +5,7 @@ const fs = require("fs");
 const initResourceSwapper = () => {
   const SWAP_FOLDER = path.join(app.getPath("documents"), "ObsidianClient", "swapper");
  
-  const folders = ["media", "glb", "img"];
+const folders = ["media", "img"];
   folders.forEach((folder) => {
     const folderPath = path.join(SWAP_FOLDER, folder);
     if (!fs.existsSync(folderPath)) {
@@ -45,7 +45,7 @@ const initResourceSwapper = () => {
       const assetPath = urlObj.pathname.replace("/assets/", "");
       const ext = path.extname(assetPath).toLowerCase();
 
-      if ([".glb", ".mp3", ".wav", ".jpg", ".png", ".gif", ".bmp"].includes(ext) && swapMap[assetPath]) {
+      if ([".mp3", ".wav", ".jpg", ".png", ".gif", ".bmp"].includes(ext) && swapMap[assetPath]) {
         const redirectURL = `obsidian-swap://${encodeURIComponent(swapMap[assetPath])}`;
         callback({ redirectURL });
       } else {
