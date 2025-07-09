@@ -60,6 +60,7 @@ const ensureFolders = async () => {
     await fs.mkdir(paths.clientData, { recursive: true });
     await fs.mkdir(paths.scripts, { recursive: true });
     await fs.mkdir(paths.captured, { recursive: true });
+    await fs.mkdir(path.join(paths.documents, "ObsidianClient", "swapper"), { recursive: true });
   } catch (err) {
     console.error("Error creating folders:", err);
   }
@@ -250,6 +251,8 @@ app.whenReady().then(async () => {
   app.setAsDefaultProtocolClient("obsidian");
 
   await ensureFolders();
+  const { initResourceSwapper } = require("./src/swapper");
+initResourceSwapper();
   await loadSettings();
   const scriptHandler = new ScriptHandler(paths.scripts);
   initDiscordRPC(mainWindow);
@@ -274,7 +277,7 @@ app.whenReady().then(async () => {
     const finalURL = `https://kirka.io/${cleanPath}${hash}`;
     if (queryPath) mainWindow.loadURL(finalURL);
   }
-
+ipcMain.on("open-swapper-folder", () => shell.openPath(path.join(paths.documents, "ObsidianClient", "swapper")));
   ipcMain.once("set-preloaded-scripts", async () => {
     splashWindow.webContents.send("update-progress", 33);
     mainWindow.webContents.once("did-finish-load", async () => {
