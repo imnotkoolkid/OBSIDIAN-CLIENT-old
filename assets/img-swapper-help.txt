@@ -2,3 +2,4 @@ flash: __flash__.bd1c2d8c.png
 shooting: __shooting-fire__.effa20af.png
 smoke: __smoke__.f081bdb0.png
 scope: __scope__.6fe76290.webp
+hitme: __hitme__.12854a28.webp
