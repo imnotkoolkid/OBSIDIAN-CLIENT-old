@@ -998,6 +998,10 @@
           <span class="css-gallery-text">KCH Crosshairs Gallery</span>
           <i class="fas fa-plus css-gallery-icon"></i>
         </div>
+        <div class="option-item">
+          <span>Open Swapper Folder</span>
+          <button class="key-bind-button" id="open-swapper-folder">Open</button>
+        </div>
       </div>
       <div class="content-panel" id="about-panel">
         <h2>About Obsidian Client</h2>
@@ -1199,6 +1203,8 @@
       value.textContent = slider.value + unit;
       applyGeneralSettings();
     }));
+    els.openSwapperFolder = document.getElementById('open-swapper-folder');
+    els.openSwapperFolder.addEventListener('click', () => window.obsidianClient.openSwapperFolder());
     els.resetButton.addEventListener('click', resetSettings);
     els.openScriptsFolder.addEventListener('click', () => window.obsidianClient.openScriptsFolder());
     els.startupBehaviour.addEventListener('change', () => window.obsidianClient.saveSettings({ startupBehaviour: els.startupBehaviour.value }));
