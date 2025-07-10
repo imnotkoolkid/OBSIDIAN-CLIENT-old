@@ -1,4 +1,5 @@
 rename your custom audio file exactly to the filename used below for the sound you want to replace.
+
 For example:
 To replace the kill2 sound, name your file: __kill2__.8ffe9342.mp3
 
