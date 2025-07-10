@@ -1,5 +1,10 @@
-flash: __flash__.bd1c2d8c.png
-shooting: __shooting-fire__.effa20af.png
-smoke: __smoke__.f081bdb0.png
-scope: __scope__.6fe76290.webp
-hitme: __hitme__.12854a28.webp
+To change an image, rename your custom image file exactly to the filename listed for the one you want to replace.
+
+For example:
+To replace the logo, name it: __logo-winter__.ba294677.svg
+
+flash:            __flash__.bd1c2d8c.png
+shooting:         __shooting-fire__.effa20af.png
+smoke:            __smoke__.f081bdb0.png
+hitme:            __hitme__.12854a28.webp
+logo:             __logo-winter__.ba294677.svg
