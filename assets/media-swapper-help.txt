@@ -1,32 +1,31 @@
 rename your custom audio file exactly to the filename used below for the sound you want to replace.
 For example:
-To replace the kill1 sound, name your file: __kill1__.623ec38b.mp3
+To replace the kill2 sound, name your file: __kill2__.8ffe9342.mp3
 
-hit:     	       __hit__.200043fa.mp3
-kill1:    	     __kill1__.623ec38b.mp3
-kill2:    	     __kill2__.8ffe9342.mp3
-kill3:    	     __kill3__.ba83d756.mp3
-kill4:         	 __kill4__.08568f50.mp3
-kill5:   	       __kill5__.cf529154.mp3
-wound1:   	     __wound1__.531f0649.mp3
-wound2:  	       __wound2__.6d084558.mp3
+hit:     	 __hit__.200043fa.mp3
+kill1:    	 __kill1__.623ec38b.mp3
+kill2:    	 __kill2__.8ffe9342.mp3
+kill3:    	 __kill3__.ba83d756.mp3
+kill4:   	 __kill4__.08568f50.mp3
+kill5:   	 __kill5__.cf529154.mp3
+wound1:   	 __wound1__.531f0649.mp3
+wound2:  	 __wound2__.6d084558.mp3
 
-sniper:  	       __use__.5421e46b.mp3
-mac10:    	     __use__.259ad4a5.mp3
-ar9:     	       __use__.6f884eb5.mp3
-revolver: 	     __use__.cbf719c0.mp3
-lar:          	 __use__.8dd49954.mp3
-weatie:   	     __use__.0621a61a.mp3
-shark:    	     __use__.4337da3c.mp3
-bayonet: 	       __use__.fd944232.mp3
-scar:     	     __use__.5ab6f364.mp3
-m60:      	     __use__.a6197a4d.mp3
+sniper:  	 __use__.5421e46b.mp3
+mac10:    	 __use__.259ad4a5.mp3
+ar9:     	 __use__.6f884eb5.mp3
+revolver: 	 __use__.cbf719c0.mp3
+lar:      	 __use__.8dd49954.mp3
+weatie:   	 __use__.0621a61a.mp3
+shark:    	 __use__.4337da3c.mp3
+bayonet: 	 __use__.fd944232.mp3
+scar:     	 __use__.5ab6f364.mp3
+m60:      	 __use__.a6197a4d.mp3
 
-dash:         	 __whoosh__.634f7dda.mp3
-earth:    	     __Earth__.37abd171.mp3
-grass: 	  	     __Grass__.9d721edd.mp3
-mud:     	       __Mud__.44d00950.mp3
-sand:    	       __Sand__.10a59d13.mp3
-stone:        	 __Stone__.a9cedce8.mp3
-
+dash:     	 __whoosh__.634f7dda.mp3
+earth:    	 __Earth__.37abd171.mp3
+grass: 	  	 __Grass__.9d721edd.mp3
+mud:     	 __Mud__.44d00950.mp3
+sand:    	 __Sand__.10a59d13.mp3
+stone:    	 __Stone__.a9cedce8.mp3
 lobby_button:    __button-special__.d058ee5f.mp3
