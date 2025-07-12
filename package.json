@@ -10,8 +10,11 @@
   "author": "imnotkoolkid",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^36.5.0",
+    "electron": "^37.2.0",
     "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "discord-rpc": "^4.0.1"
   },
   "build": {
     "appId": "com.obsidian.client",
@@ -23,15 +26,20 @@
       "target": "nsis",
       "icon": "assets/Obsidian Client.ico"
     },
+    "mac": {
+      "target": ["dmg", "zip"],
+      "icon": "assets/Obsidian Client.icns"
+    },
     "nsis": {
       "oneClick": true,
       "installerIcon": "assets/Obsidian Client.ico",
       "uninstallerIcon": "assets/Obsidian Client.ico",
       "uninstallDisplayName": "Obsidian Client",
       "allowToChangeInstallationDirectory": false
-    }
-  },
-  "dependencies": {
-    "discord-rpc": "^4.0.1"
+    },
+    "files": [
+      "**/*",
+      "assets/**/*"
+    ]
   }
 }
