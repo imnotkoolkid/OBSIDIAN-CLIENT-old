@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 
 class ScriptHandler {
@@ -10,9 +10,9 @@ class ScriptHandler {
     return this.scriptsPath;
   }
 
-  getAllScripts() {
+  async getAllScripts() {
     try {
-      return fs.readdirSync(this.scriptsPath).filter(f => f.endsWith('.js'));
+      return (await fs.readdir(this.scriptsPath)).filter(f => f.endsWith('.js'));
     } catch (err) {
       console.error('Error reading scripts folder:', err);
       return [];
