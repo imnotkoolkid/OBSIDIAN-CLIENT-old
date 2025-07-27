@@ -28,5 +28,6 @@
       "isDefault": true
     }
   ],
-  "openingAnimations": false
+  "openingAnimations": false,
+"noHurtCam": false
 }
