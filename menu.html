@@ -855,6 +855,13 @@
             </select>
           </div>
         </div>
+        <div class="option-item">
+  <span class="option-label">No Hurt Cam</span>
+  <label class="toggle">
+    <input type="checkbox" id="no-hurt-cam-toggle">
+    <span class="slider"></span>
+  </label>
+</div>
         <h3 style="color: var(--primary); font-size: 16px; margin: 10px 0;">General UI</h3>
         <div class="option-item">
           <span class="option-label">Opening Animations</span>
@@ -1005,7 +1012,7 @@
       </div>
       <div class="content-panel" id="about-panel">
         <h2>About Obsidian Client</h2>
-        <p>Obsidian Client</p>
+        <p>Obsidian Client -     "electron": "^37.2.0",</p>
         <div style="margin-top: 20px; font-size: 12px; color: rgba(255,255,255,0.6);">
           <div>Version: pre release</div>
         </div>
@@ -1055,6 +1062,7 @@
       kchAssetsBar: document.getElementById('kch-assets-bar'),
       kchTexturesBar: document.getElementById('kch-textures-bar'),
       kchCrosshairsBar: document.getElementById('kch-crosshairs-bar'),
+      noHurtCam: document.getElementById('no-hurt-cam-toggle')
     };
 
     let editingCSSId = null;
@@ -1163,6 +1171,7 @@
         scale: els.scale.slider.value,
         chatMode: els.chatMode.value,
         openingAnimations: els.openingAnimations.checked,
+        noHurtCam: els.noHurtCam.checked
       };
       window.obsidianClient.injectUICSS(settings);
       window.obsidianClient.saveSettings(settings);
@@ -1187,6 +1196,7 @@
       els.keyDisp.textContent = settings.menuToggleKey || 'ShiftRight';
       els.joinKeyDisp.textContent = settings.joinLinkKey || 'J';
       els.openingAnimations.checked = settings.openingAnimations || false;
+      els.noHurtCam.checked = settings.noHurtCam || false;
       window.obsidianClient.setDevTools(els.devTools.checked);
       window.obsidianClient.setMenuToggleKey(els.keyDisp.textContent);
       window.obsidianClient.setJoinLinkKey(els.joinKeyDisp.textContent);
@@ -1220,6 +1230,7 @@
     els.kchAssetsBar.addEventListener('click', () => window.obsidianClient.openAssetsGallery());
     els.kchTexturesBar.addEventListener('click', () => window.obsidianClient.openTexturesGallery());
     els.kchCrosshairsBar.addEventListener('click', () => window.obsidianClient.openCrosshairsGallery());
+    els.noHurtCam.addEventListener('change', applyUISettings);
     els.addCSSBar.addEventListener('click', () => {
       if (window.obsidianClient.getSettings().kchCSSTitle) return;
       editingCSSId = null;
