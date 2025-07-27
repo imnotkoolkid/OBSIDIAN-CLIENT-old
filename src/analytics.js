@@ -63,7 +63,6 @@ class Analytics {
         500
       );
 
-      console.log(`Analytics saved for game: ${analyticsData.gameCode}`);
     } catch (error) {
       console.error("Failed to save analytics:", error);
     }
@@ -74,11 +73,9 @@ class Analytics {
       const parts = url.split("~");
       this.currentGameCode = parts[parts.length - 1];
       this.joinTime = Date.now();
-      console.log(`Joined game: ${this.currentGameCode}`);
     } else {
       if (this.currentGameCode) {
         const duration = Date.now() - this.joinTime;
-        console.log(`Left game: ${this.currentGameCode}. Duration: ${duration}ms`);
 
         this.saveAnalytics({
           gameCode: this.currentGameCode,
