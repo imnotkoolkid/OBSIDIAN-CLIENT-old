@@ -30,8 +30,6 @@ const analyticsUI = {
         throw new Error('No analytics data received');
       }
 
-      console.log('Analytics data received:', data);
-
       this.generateChart(data.last7Days, data.playtimeMap);
       this.updateStats(data.totalPlaytime, data.totalGames, data.activeDays);
 
