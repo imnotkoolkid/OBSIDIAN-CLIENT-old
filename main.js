@@ -32,7 +32,6 @@ const paths = {
 
 app.commandLine.appendSwitch("disable-gpu-vsync");
 app.commandLine.appendSwitch("enable-gpu-rasterization");
-app.commandLine.appendSwitch("high-dpi-support", "1");
 app.commandLine.appendSwitch("force-high-performance-gpu");
 app.commandLine.appendSwitch("enable-zero-copy");
 app.commandLine.appendSwitch("enable-native-gpu-memory-buffers");
