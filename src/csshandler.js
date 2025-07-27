@@ -10,9 +10,10 @@ class CSSHandler {
 
   async applyConfig() {
     try {
-      const { cssList = [], backgroundEnabled, background, brightness = '100', contrast = '1', saturation = '1', grayscale = '0', hue = '0', invert = false, sepia = '0', kchCSS, kchCSSTitle, opacity = '100', scale = '100', chatMode = 'default', openingAnimations = false } = await this.loadSettings();
+      const { cssList = [], backgroundEnabled, background, brightness = '100', contrast = '1', saturation = '1', grayscale = '0', hue = '0', invert = false, sepia = '0', kchCSS, kchCSSTitle, opacity = '100', scale = '100', chatMode = 'default', openingAnimations = false, noHurtCam = false } = await this.loadSettings();
       await this.injectGeneralCSS(`body, html { filter: brightness(${brightness}%) contrast(${contrast}) saturate(${saturation}) grayscale(${grayscale}) hue-rotate(${hue}deg) invert(${invert ? 1 : 0}) sepia(${sepia}); }`);
-      await this.injectUICSS({ opacity, scale, chatMode, openingAnimations });
+      await this.injectUICSS({ opacity, scale, chatMode, openingAnimations, noHurtCam });
+await this.injectNoHurtCamCSS(noHurtCam);
       if (backgroundEnabled && background) await this.injectBackgroundCSS(background);
       else await this.removeCSS('background');
       if (kchCSS && kchCSSTitle) {
@@ -28,9 +29,10 @@ class CSSHandler {
     }
   }
 
-  async applyConfigWithProgress({ cssList = [], backgroundEnabled, background, brightness = '100', contrast = '1', saturation = '1', grayscale = '0', hue = '0', invert = false, sepia = '0', kchCSS, kchCSSTitle, opacity = '100', scale = '100', chatMode = 'default', openingAnimations = false }) {
-    await this.injectGeneralCSS(`body, html { filter: brightness(${brightness}%) contrast(${contrast}) saturate(${saturation}) grayscale(${grayscale}) hue-rotate(${hue}deg) invert(${invert ? 1 : 0}) sepia(${sepia}); }`);
-    await this.injectUICSS({ opacity, scale, chatMode, openingAnimations });
+  async applyConfigWithProgress({ cssList = [], backgroundEnabled, background, brightness = '100', contrast = '1', saturation = '1', grayscale = '0', hue = '0', invert = false, sepia = '0', opacity = '100', scale = '100', chatMode = 'default', openingAnimations = false, noHurtCam = false }) {
+    await this.injectGeneralCSS(`body { filter: brightness(${brightness}%) contrast(${contrast}) saturate(${saturation}) grayscale(${grayscale}) hue-rotate(${hue}deg) invert(${invert ? 1 : 0}) sepia(${sepia}); }`);
+    await this.injectUICSS({ opacity, scale, chatMode, openingAnimations, noHurtCam });
+    await this.injectNoHurtCamCSS(noHurtCam);
     this.mainWindow.webContents.send('update-progress', 83);
     if (backgroundEnabled && background) await this.injectBackgroundCSS(background);
     else await this.removeCSS('background');
@@ -98,7 +100,7 @@ class CSSHandler {
     this.cssKeys.general = await this.mainWindow.webContents.insertCSS(css);
   }
 
-  async injectUICSS({ opacity, scale, chatMode, openingAnimations }) {
+  async injectUICSS({ opacity, scale, chatMode, openingAnimations, noHurtCam }) {
     let css = `.team-score, .desktop-game-interface { opacity: ${opacity}% !important; transform: scale(${scale / 100}) !important; }`;
     if (chatMode === 'simplified') {
       css += `#bottom-left .chat .input-wrapper input { opacity: 0 !important; margin: 0 !important; }
@@ -110,63 +112,62 @@ class CSSHandler {
     }
     if (openingAnimations) {
       css += `
-        
-#canvas,
-.ach-cont .text,
-.view,
-.subj-img,
-.player-canvas {
-  display: inline-block ;
-  animation: Stretch 0.5s ease-in-out;
-  z-index: 0;
-}
-@keyframes Stretch {
-  0%   { transform: scale(1, 1); }
-  4%  { transform: scale(0, 0.1); }
-}
-
-.hp-progress,
-.tab-info,
-.player-lobby,
-.all-items,
-.background,
-.play-content,
-.container-card,
-.close,
-.buttons,
-.maps,
-.card,
-.Friend.is-online,
-.Friend,
-.interface,
-.server,
-.alert-default {
-  animation: Stretch 0.5s ease-in-out;
-  z-index: 0;
-}
-
-
-#overlay {
-  position: absolute !important;
-  top: 95% !important;
-  left: 1% !important;
-  filter: 
-    drop-shadow(0 0 4px rgba(128, 0, 128, 0.6))
-    drop-shadow(0 0 8px rgba(128, 0, 128, 0.8))
-    drop-shadow(0 0 12px rgba(128, 0, 128, 1));
-  display: flex !important;     
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 10px !important;            
-  white-space: nowrap !important; 
-  font-size: 0.7rem;
-}
-          `;
+        #canvas,
+        .ach-cont .text,
+        .view,
+        .subj-img,
+        .player-canvas {
+          display: inline-block;
+          animation: Stretch 0.5s ease-in-out;
+          z-index: 0;
+        }
+        @keyframes Stretch {
+          0%   { transform: scale(1, 1); }
+          4%  { transform: scale(0, 0.1); }
+        }
+        .hp-progress,
+        .tab-info,
+        .player-lobby,
+        .all-items,
+        .background,
+        .play-content,
+        .container-card,
+        .close,
+        .buttons,
+        .maps,
+        .card,
+        .Friend.is-online,
+        .Friend,
+        .interface,
+        .server,
+        .alert-default {
+          animation: Stretch 0.5s ease-in-out;
+          z-index: 0;
+        }
+      `;
     }
     if (this.cssKeys.ui) await this.mainWindow.webContents.removeInsertedCSS(this.cssKeys.ui).catch(() => { });
     this.cssKeys.ui = await this.mainWindow.webContents.insertCSS(css);
-    await this.saveSettings({ opacity, scale, chatMode, openingAnimations });
+    await this.saveSettings({ opacity, scale, chatMode, openingAnimations, noHurtCam });
   }
+
+async injectNoHurtCamCSS(enabled) {
+  const css = enabled ? `
+    img[src="https://kirka.io/assets/img/__hitme__.12854a28.webp"],
+    img[src$="img/__hitme__.12854a28.webp"] {
+      display: none !important;
+      visibility: hidden !important;
+    }
+  ` : '';
+  if (this.cssKeys.noHurtCam) {
+    await this.mainWindow.webContents.removeInsertedCSS(this.cssKeys.noHurtCam).catch(() => {});
+    delete this.cssKeys.noHurtCam;
+  }
+  if (css) {
+    this.cssKeys.noHurtCam = await this.mainWindow.webContents.insertCSS(css);
+  }
+  await this.saveSettings({ noHurtCam: enabled });
+}
 
   async injectBackgroundCSS(url) {
     const css = `#app>div.interface.text-2>div.background{background:url(${url}) 50% 50%/cover no-repeat!important;animation:none!important;transition:none!important;transform:none!important;-webkit-transition:none!important;-moz-transition:none!important;-o-transition:none!important;-webkit-animation:none!important;-moz-animation:none!important;-o-animation:none!important}#app>div.interface.text-2>div.background>div.bg-radial,#app>div.interface.text-2>div.background>div.pattern-bg{display:none!important}`;
