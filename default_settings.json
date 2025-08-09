@@ -29,5 +29,7 @@
     }
   ],
   "openingAnimations": false,
-"noHurtCam": false
+  "hurtCamMode": "default",
+  "killicon": "",
+  "hitmark": ""
 }
