@@ -10,10 +10,11 @@ class CSSHandler {
 
   async applyConfig() {
     try {
-      const { cssList = [], backgroundEnabled, background, brightness = '100', contrast = '1', saturation = '1', grayscale = '0', hue = '0', invert = false, sepia = '0', kchCSS, kchCSSTitle, opacity = '100', scale = '100', chatMode = 'default', openingAnimations = false, noHurtCam = false } = await this.loadSettings();
+      const { cssList = [], backgroundEnabled, background, brightness = '100', contrast = '1', saturation = '1', grayscale = '0', hue = '0', invert = false, sepia = '0', kchCSS, kchCSSTitle, opacity = '100', scale = '100', chatMode = 'default', openingAnimations = false, hurtCamMode = 'default', killicon = '', hitmark = '' } = await this.loadSettings();
       await this.injectGeneralCSS(`body, html { filter: brightness(${brightness}%) contrast(${contrast}) saturate(${saturation}) grayscale(${grayscale}) hue-rotate(${hue}deg) invert(${invert ? 1 : 0}) sepia(${sepia}); }`);
-      await this.injectUICSS({ opacity, scale, chatMode, openingAnimations, noHurtCam });
-await this.injectNoHurtCamCSS(noHurtCam);
+      await this.injectUICSS({ opacity, scale, chatMode, openingAnimations, hurtCamMode });
+      await this.injectHurtCamCSS(hurtCamMode);
+      await this.injectKillIconAndHitmarkCSS({ killicon, hitmark });
       if (backgroundEnabled && background) await this.injectBackgroundCSS(background);
       else await this.removeCSS('background');
       if (kchCSS && kchCSSTitle) {
@@ -29,10 +30,11 @@ await this.injectNoHurtCamCSS(noHurtCam);
     }
   }
 
-  async applyConfigWithProgress({ cssList = [], backgroundEnabled, background, brightness = '100', contrast = '1', saturation = '1', grayscale = '0', hue = '0', invert = false, sepia = '0', opacity = '100', scale = '100', chatMode = 'default', openingAnimations = false, noHurtCam = false }) {
+  async applyConfigWithProgress({ cssList = [], backgroundEnabled, background, brightness = '100', contrast = '1', saturation = '1', grayscale = '0', hue = '0', invert = false, sepia = '0', opacity = '100', scale = '100', chatMode = 'default', openingAnimations = false, hurtCamMode = 'default', killicon = '', hitmark = '' }) {
     await this.injectGeneralCSS(`body { filter: brightness(${brightness}%) contrast(${contrast}) saturate(${saturation}) grayscale(${grayscale}) hue-rotate(${hue}deg) invert(${invert ? 1 : 0}) sepia(${sepia}); }`);
-    await this.injectUICSS({ opacity, scale, chatMode, openingAnimations, noHurtCam });
-    await this.injectNoHurtCamCSS(noHurtCam);
+    await this.injectUICSS({ opacity, scale, chatMode, openingAnimations, hurtCamMode });
+    await this.injectHurtCamCSS(hurtCamMode);
+    await this.injectKillIconAndHitmarkCSS({ killicon, hitmark });
     this.mainWindow.webContents.send('update-progress', 83);
     if (backgroundEnabled && background) await this.injectBackgroundCSS(background);
     else await this.removeCSS('background');
@@ -100,7 +102,7 @@ await this.injectNoHurtCamCSS(noHurtCam);
     this.cssKeys.general = await this.mainWindow.webContents.insertCSS(css);
   }
 
-  async injectUICSS({ opacity, scale, chatMode, openingAnimations, noHurtCam }) {
+  async injectUICSS({ opacity, scale, chatMode, openingAnimations, hurtCamMode }) {
     let css = `.team-score, .desktop-game-interface { opacity: ${opacity}% !important; transform: scale(${scale / 100}) !important; }`;
     if (chatMode === 'simplified') {
       css += `#bottom-left .chat .input-wrapper input { opacity: 0 !important; margin: 0 !important; }
@@ -141,33 +143,62 @@ await this.injectNoHurtCamCSS(noHurtCam);
         .interface,
         .server,
         .alert-default {
-          animation: Stretch 0.5s ease-in-out;
+         animation: Stretch 0.5s ease-in-out;
           z-index: 0;
         }
       `;
     }
     if (this.cssKeys.ui) await this.mainWindow.webContents.removeInsertedCSS(this.cssKeys.ui).catch(() => { });
     this.cssKeys.ui = await this.mainWindow.webContents.insertCSS(css);
-    await this.saveSettings({ opacity, scale, chatMode, openingAnimations, noHurtCam });
+    await this.saveSettings({ opacity, scale, chatMode, openingAnimations, hurtCamMode });
   }
 
-async injectNoHurtCamCSS(enabled) {
-  const css = enabled ? `
-    img[src="https://kirka.io/assets/img/__hitme__.12854a28.webp"],
-    img[src$="img/__hitme__.12854a28.webp"] {
-      display: none !important;
-      visibility: hidden !important;
+  async injectHurtCamCSS(mode) {
+    let css = '';
+    if (mode === 'none') {
+      css = `
+        img[src="https://kirka.io/assets/img/__hitme__.12854a28.webp"],
+        img[src$="img/__hitme__.12854a28.webp"] {
+          display: none !important;
+          visibility: hidden !important;
+        }
+      `;
+    } else if (mode === 'simplified') {
+      css = `
+        img[src="https://kirka.io/assets/img/__hitme__.12854a28.webp"],
+        img[src$="img/__hitme__.12854a28.webp"] {
+          content: url('https://raw.githubusercontent.com/imnotkoolkid/OBSIDIAN-CLIENT/refs/heads/main/assets/smallerhitme.webp') !important;
+        }
+      `;
     }
-  ` : '';
-  if (this.cssKeys.noHurtCam) {
-    await this.mainWindow.webContents.removeInsertedCSS(this.cssKeys.noHurtCam).catch(() => {});
-    delete this.cssKeys.noHurtCam;
+    if (this.cssKeys.hurtCam) {
+      await this.mainWindow.webContents.removeInsertedCSS(this.cssKeys.hurtCam).catch(() => { });
+      delete this.cssKeys.hurtCam;
+    }
+    if (css) {
+      this.cssKeys.hurtCam = await this.mainWindow.webContents.insertCSS(css);
+    }
+    await this.saveSettings({ hurtCamMode: mode });
   }
-  if (css) {
-    this.cssKeys.noHurtCam = await this.mainWindow.webContents.insertCSS(css);
+
+  async injectKillIconAndHitmarkCSS({ killicon, hitmark }) {
+    let css = '';
+    if (killicon) {
+      css += `.animate-cont::before { content: ""; background: url(${killicon}); width: 9rem; height: 9rem; margin-bottom: 2rem; display: inline-block; background-position: center; background-size: contain; background-repeat: no-repeat; }
+            .animate-cont svg { display: none; }`;
+    }
+    if (hitmark) {
+      css += `.hitmark { content: url(${hitmark}) !important; }`;
+    }
+    if (this.cssKeys.killiconHitmark) {
+      await this.mainWindow.webContents.removeInsertedCSS(this.cssKeys.killiconHitmark).catch(() => { });
+      delete this.cssKeys.killiconHitmark;
+    }
+    if (css) {
+      this.cssKeys.killiconHitmark = await this.mainWindow.webContents.insertCSS(css);
+    }
+    await this.saveSettings({ killicon, hitmark });
   }
-  await this.saveSettings({ noHurtCam: enabled });
-}
 
   async injectBackgroundCSS(url) {
     const css = `#app>div.interface.text-2>div.background{background:url(${url}) 50% 50%/cover no-repeat!important;animation:none!important;transition:none!important;transform:none!important;-webkit-transition:none!important;-moz-transition:none!important;-o-transition:none!important;-webkit-animation:none!important;-moz-animation:none!important;-o-animation:none!important}#app>div.interface.text-2>div.background>div.bg-radial,#app>div.interface.text-2>div.background>div.pattern-bg{display:none!important}`;
