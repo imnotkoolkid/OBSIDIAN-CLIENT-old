@@ -55,6 +55,7 @@ Made with <3 by
 - [zenos](https://github.com/Dev-Zenos)  
 
 ---
+> *note - preview build doesn't have the player freezing Bug.
 
 Check out our Safety page for details on how this client is safe to use. [**Safety**](https://obsidianclient.pages.dev/safety) 
 
