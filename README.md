@@ -33,10 +33,9 @@ You can download the preview build from the [**GitHub Releases**](https://github
 ##  About This Build
 
 This repository exists **only** to share a preview of the work that had been done before the project was paused.  
-
 - **No active development**: this build won’t receive updates or bug fixes(if any) from the original developers.
 - **Feature set may be incomplete** compared to what was originally planned.
-
+  
 If you’re looking for a **final product** — this isn’t it.
 
 ---
@@ -56,5 +55,7 @@ Made with ❤️ by
 - [zenos](https://github.com/Dev-Zenos)  
 
 ---
+
+Check out our Safety page for details on how this client is safe to use. [**Safety**](https://obsidianclient.pages.dev/safety) 
 
 [main repo](https://github.com/imnotkoolkid/OBSIDIAN-CLIENT)
