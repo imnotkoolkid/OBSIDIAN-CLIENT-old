@@ -9,14 +9,14 @@ smoke:            __smoke__.f081bdb0.png
 hitme:            __hitme__.12854a28.webp
 logo:             __logo-winter__.ba294677.svg
 
- scar: texture.b3fc7981.webp 
- ar-9: texture.1794de31.webp 
- mac-10 texture.36d894bd.webp 
- m60: texture.b658c822.webp 
- tomahawk: texture.397a3f05.webp 
- vita: texture.b2a49027.webp 
- shark: texture.6c8a6582.webp 
- revolver: texture.0bed9187.webp 
- bayonet: texture.76c24e59.webp 
- lar: texture.d97db214.webp 
- weatie: texture.212a85fe.webp
+ scar:           texture.b3fc7981.webp 
+ ar-9:           texture.1794de31.webp 
+ mac-10:         texture.36d894bd.webp 
+ m60:            texture.b658c822.webp 
+ tomahawk:       texture.397a3f05.webp 
+ vita:           texture.b2a49027.webp 
+ shark:          texture.6c8a6582.webp 
+ revolver:       texture.0bed9187.webp 
+ bayonet:        texture.76c24e59.webp 
+ lar:            texture.d97db214.webp 
+ weatie:         texture.212a85fe.webp
