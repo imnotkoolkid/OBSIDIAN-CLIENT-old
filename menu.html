@@ -3,7 +3,6 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Obsidian Client Menu</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
@@ -179,20 +178,24 @@
       position: relative;
       width: 50px;
       height: 24px;
+      display: inline-block;
     }
 
     .toggle input {
       opacity: 0;
       width: 0;
       height: 0;
+      position: absolute;
     }
 
     .slider {
       position: absolute;
-      cursor: pointer;
-      inset: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background: rgba(255, 255, 255, 0.2);
-      transition: 0.4s;
+      transition: background 0.4s;
       border-radius: 24px;
     }
 
@@ -204,15 +207,15 @@
       left: 3px;
       bottom: 3px;
       background: #fff;
-      transition: 0.4s;
+      transition: transform 0.4s;
       border-radius: 50%;
     }
 
-    input:checked+.slider {
+    .toggle input:checked+.slider {
       background: var(--primary);
     }
 
-    input:checked+.slider:before {
+    .toggle input:checked+.slider:before {
       transform: translateX(26px);
     }
 
@@ -577,26 +580,6 @@
       display: block;
     }
 
-    .container {
-      display: flex;
-      height: 100%;
-      background: rgba(22, 16, 35, 0.75);
-      border: 1px solid var(--glass-border);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-
-    .menu-item:hover {
-      background: var(--hover-bg);
-    }
-
-    .menu-item.active {
-      background: var(--active-item);
-    }
-
-
-
     .tab-content {
       display: none;
     }
@@ -762,6 +745,41 @@
       position: relative;
       padding-left: 25px;
     }
+
+    button:focus {
+      outline: none;
+    }
+
+    .slider-text-input {
+      width: 30px;
+      padding: 4px 8px;
+      background: rgba(10, 5, 20, 0.8);
+      border: 1px solid var(--glass-border);
+      border-radius: 4px;
+      color: var(--text-color);
+      font: 12px system-ui;
+      text-align: right;
+      transition: border-color 0.3s;
+    }
+
+    .slider-text-input.invalid {
+      border-color: #ff6b6b;
+    }
+
+    .slider-text-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .slider-text-input::-webkit-inner-spin-button,
+    .slider-text-input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .slider-text-input[type="number"] {
+      -moz-appearance: textfield;
+    }
   </style>
 </head>
 
@@ -787,43 +805,42 @@
           <span class="option-label">Brightness</span>
           <div class="range-slider">
             <input type="range" id="brightness-slider" min="0" max="120" value="100" step="1">
-            <span class="range-value" id="brightness-value">100%</span>
+            <div class="range-value" id="brightness-value" data-value="100">100%</div>
           </div>
         </div>
         <div class="option-item">
           <span class="option-label">Contrast</span>
           <div class="range-slider">
             <input type="range" id="contrast-slider" min="0.9" max="1.5" value="1" step="0.01">
-            <span class="range-value" id="contrast-value">1</span>
+            <div class="range-value" id="contrast-value" data-value="1">1</div>
           </div>
         </div>
         <div class="option-item">
           <span class="option-label">Saturation</span>
           <div class="range-slider">
             <input type="range" id="saturation-slider" min="0" max="3" value="1" step="0.01">
-            <span class="range-value" id="saturation-value">1</span>
+            <div class="range-value" id="saturation-value" data-value="1">1</div>
           </div>
         </div>
         <div class="option-item">
           <span class="option-label">Grayscale</span>
           <div class="range-slider">
             <input type="range" id="grayscale-slider" min="0" max="1" value="0" step="0.01">
-            <span class="range-value" id="grayscale-value">0</span>
+            <div class="range-value" id="grayscale-value" data-value="0">0</div>
           </div>
         </div>
         <div class="option-item">
           <span class="option-label">Hue</span>
           <div class="range-slider">
             <input type="range" id="hue-slider" min="0" max="180" value="0" step="1">
-            <span class="range-value" id="hue-value">0</span>
+            <div class="range-value" id="hue-value" data-value="0">0</div>
           </div>
         </div>
-
         <div class="option-item">
           <span class="option-label">Sepia</span>
           <div class="range-slider">
             <input type="range" id="sepia-slider" min="0" max="1" value="0" step="0.01">
-            <span class="range-value" id="sepia-value">0</span>
+            <div class="range-value" id="sepia-value" data-value="0">0</div>
           </div>
         </div>
         <button class="reset-button" id="reset-settings">Reset to Defaults</button>
@@ -835,14 +852,14 @@
           <span class="option-label">Opacity</span>
           <div class="range-slider">
             <input type="range" id="opacity-slider" min="0" max="100" value="100" step="1">
-            <span class="range-value" id="opacity-value">100%</span>
+            <div class="range-value" id="opacity-value" data-value="100">100%</div>
           </div>
         </div>
         <div class="option-item">
           <span class="option-label">Scale</span>
           <div class="range-slider">
             <input type="range" id="scale-slider" min="0" max="100" value="100" step="1">
-            <span class="range-value" id="scale-value">100%</span>
+            <div class="range-value" id="scale-value" data-value="100">100%</div>
           </div>
         </div>
         <div class="option-item">
@@ -856,12 +873,27 @@
           </div>
         </div>
         <div class="option-item">
-  <span class="option-label">No Hurt Cam</span>
-  <label class="toggle">
-    <input type="checkbox" id="no-hurt-cam-toggle">
-    <span class="slider"></span>
-  </label>
-</div>
+          <span class="option-label">Hurt Cam</span>
+          <div class="select-container">
+            <select id="hurt-cam-mode">
+              <option value="default">Default</option>
+              <option value="none">None</option>
+              <option value="simplified">Simplified</option>
+            </select>
+          </div>
+        </div>
+        <div class="background-input">
+          <span class="input-label">KillIcon</span>
+          <div class="background-input">
+            <input type="text" id="killicon-input" placeholder="https://example.com/killicon.png">
+          </div>
+        </div>
+        <div class="background-input">
+          <span class="input-label">Hitmark</span>
+          <div class="background-input">
+            <input type="text" id="hitmark-input" placeholder="https://example.com/hitmark.png">
+          </div>
+        </div>
         <h3 style="color: var(--primary); font-size: 16px; margin: 10px 0;">General UI</h3>
         <div class="option-item">
           <span class="option-label">Opening Animations</span>
@@ -1012,9 +1044,13 @@
       </div>
       <div class="content-panel" id="about-panel">
         <h2>About Obsidian Client</h2>
-        <p>Obsidian Client -     "electron": "^37.2.0",</p>
-        <div style="margin-top: 20px; font-size: 12px; color: rgba(255,255,255,0.6);">
-          <div>Version: pre release</div>
+        <p style="font-size: 16px;">Obsidian Client</p>
+        <div style="margin-top: 20px; font-size: 14px; color: rgba(255, 255, 255, 0.74);">
+          <div><strong>Version:</strong> Pre-release</div>
+          <div>- This project is currently paused and this build does not represent the final product.</div>
+          <div>- Development was stopped midway, so features, design, and performance may differ significantly if the
+            project is ever revived in the future.</div>
+          <div>- <a style="color:#a385ff;" href="https://github.com/imnotkoolkid/OBSIDIAN-CLIENT?tab=readme-ov-file#obsidian-client">More info</a></div>
         </div>
       </div>
     </div>
@@ -1031,12 +1067,65 @@
       scriptCount: document.getElementById('loaded-scripts-count'),
       scriptsContainer: document.getElementById('scripts-list-container'),
       sliders: {
-        brightness: { slider: document.getElementById('brightness-slider'), value: document.getElementById('brightness-value'), unit: '%' },
-        contrast: { slider: document.getElementById('contrast-slider'), value: document.getElementById('contrast-value') },
-        saturation: { slider: document.getElementById('saturation-slider'), value: document.getElementById('saturation-value') },
-        grayscale: { slider: document.getElementById('grayscale-slider'), value: document.getElementById('grayscale-value') },
-        hue: { slider: document.getElementById('hue-slider'), value: document.getElementById('hue-value') },
-        sepia: { slider: document.getElementById('sepia-slider'), value: document.getElementById('sepia-value') },
+        brightness: {
+          slider: document.getElementById('brightness-slider'),
+          value: document.getElementById('brightness-value'),
+          unit: '%',
+          min: 0,
+          max: 120,
+          step: 1
+        },
+        contrast: {
+          slider: document.getElementById('contrast-slider'),
+          value: document.getElementById('contrast-value'),
+          min: 0.9,
+          max: 1.5,
+          step: 0.01
+        },
+        saturation: {
+          slider: document.getElementById('saturation-slider'),
+          value: document.getElementById('saturation-value'),
+          min: 0,
+          max: 3,
+          step: 0.01
+        },
+        grayscale: {
+          slider: document.getElementById('grayscale-slider'),
+          value: document.getElementById('grayscale-value'),
+          min: 0,
+          max: 1,
+          step: 0.01
+        },
+        hue: {
+          slider: document.getElementById('hue-slider'),
+          value: document.getElementById('hue-value'),
+          min: 0,
+          max: 180,
+          step: 1
+        },
+        sepia: {
+          slider: document.getElementById('sepia-slider'),
+          value: document.getElementById('sepia-value'),
+          min: 0,
+          max: 1,
+          step: 0.01
+        },
+        opacity: {
+          slider: document.getElementById('opacity-slider'),
+          value: document.getElementById('opacity-value'),
+          unit: '%',
+          min: 0,
+          max: 100,
+          step: 1
+        },
+        scale: {
+          slider: document.getElementById('scale-slider'),
+          value: document.getElementById('scale-value'),
+          unit: '%',
+          min: 0,
+          max: 100,
+          step: 1
+        },
       },
       resetButton: document.getElementById('reset-settings'),
       startupBehaviour: document.getElementById('startup-behaviour'),
@@ -1062,18 +1151,51 @@
       kchAssetsBar: document.getElementById('kch-assets-bar'),
       kchTexturesBar: document.getElementById('kch-textures-bar'),
       kchCrosshairsBar: document.getElementById('kch-crosshairs-bar'),
-      noHurtCam: document.getElementById('no-hurt-cam-toggle')
+      hurtCamMode: document.getElementById('hurt-cam-mode'),
+      killicon: document.getElementById('killicon-input'),
+      hitmark: document.getElementById('hitmark-input'),
     };
 
-    let editingCSSId = null;
-    let settingKey = false;
-    let settingJoinKey = false;
+    let editingCSSId = null, settingKey = false, settingJoinKey = false;
 
     const debounce = (fn, ms) => {
       let timeout;
       return (...args) => (clearTimeout(timeout), timeout = setTimeout(() => fn(...args), ms));
     };
 
+    const handleSliderInput = (slider, valueElement, unit = '', min, max, step, callback) => {
+      slider.addEventListener('input', () => {
+        const value = Number(slider.value);
+        valueElement.textContent = value + unit;
+        valueElement.dataset.value = value;
+        callback();
+      });
+      valueElement.addEventListener('click', () => {
+        const currentValue = valueElement.dataset.value || slider.value;
+        valueElement.innerHTML = `<input type="number" class="slider-text-input" value="${currentValue}" step="${step}">`;
+        const input = valueElement.querySelector('input');
+        input.focus();
+        input.addEventListener('blur', () => {
+          let value = Number(input.value);
+          if (isNaN(value) || value < min || value > max) {
+            input.classList.add('invalid');
+            setTimeout(() => {
+              valueElement.innerHTML = valueElement.dataset.value + unit;
+              input.classList.remove('invalid');
+            }, 1000);
+          } else {
+            value = Math.round(value / step) * step;
+            slider.value = value;
+            valueElement.textContent = value + unit;
+            valueElement.dataset.value = value;
+            callback();
+          }
+        });
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') input.blur();
+        });
+      });
+    };
     const applyGeneralSettings = () => {
       const settings = Object.entries(els.sliders).reduce((acc, [k, { slider: { value } }]) => ({ ...acc, [k]: value }), {});
       const css = `body, html { filter: brightness(${settings.brightness}%) contrast(${settings.contrast}) saturate(${settings.saturation}) grayscale(${settings.grayscale}) hue-rotate(${settings.hue}deg) sepia(${settings.sepia}); }`;
@@ -1102,13 +1224,13 @@
       const disabledScripts = window.obsidianClient.getDisabledScripts();
       els.scriptCount.textContent = allScripts.filter(s => !disabledScripts.includes(s)).length;
       els.scriptsContainer.innerHTML = allScripts.length ? allScripts.map(s => `
-    <div class="option-item">
-      <span>${s.replace('.js', '')}</span>
-      <label class="toggle">
-        <input type="checkbox" class="script-toggle" data-script="${s}" ${!disabledScripts.includes(s) ? 'checked' : ''}>
-        <span class="slider"></span>
-      </label>
-    </div>`).join('') : '<div style="padding: 10px 0; color: rgba(255,255,255,0.6); font-size: 13px;">No scripts found</div>';
+      <div class="option-item">
+        <span>${s.replace('.js', '')}</span>
+        <label class="toggle">
+          <input type="checkbox" class="script-toggle" data-script="${s}" ${!disabledScripts.includes(s) ? 'checked' : ''}>
+          <span class="slider"></span>
+        </label>
+      </div>`).join('') : '<div style="padding: 10px 0; color: rgba(255,255,255,0.6); font-size: 13px;">No scripts found</div>';
       document.querySelectorAll('.script-toggle').forEach(t => t.addEventListener('change', e => {
         window.obsidianClient.toggleScript(e.target.dataset.script, e.target.checked);
         setTimeout(() => {
@@ -1121,21 +1243,19 @@
 
     const loadCSSList = () => {
       const { cssList = [], kchCSSTitle = '' } = window.obsidianClient.getSettings();
-      console.log('Loading CSS list, kchCSSTitle:', kchCSSTitle);
       els.cssListContainer.innerHTML = cssList.length ? cssList.map(entry => `
-    <div class="css-item" data-id="${entry.id}">
-      <span>${entry.name}</span>
-      <label class="toggle css-item-toggle">
-        <input type="checkbox" class="css-toggle" data-id="${entry.id}" ${entry.enabled ? 'checked' : ''} ${kchCSSTitle ? 'disabled' : ''}>
-        <span class="slider"></span>
-      </label>
-      ${entry.isDefault ? '' : `
-        <i class="fas fa-pencil css-item-edit" data-id="${entry.id}"></i>
-        <i class="fas fa-times css-item-remove" data-id="${entry.id}"></i>
-      `}
-    </div>`).join('') : '<div style="padding: 10px 0; color: rgba(255,255,255,0.6); font-size: 13px;">No custom CSS added</div>';
+      <div class="css-item" data-id="${entry.id}">
+        <span>${entry.name}</span>
+        <label class="toggle css-item-toggle">
+          <input type="checkbox" class="css-toggle" data-id="${entry.id}" ${entry.enabled ? 'checked' : ''} ${kchCSSTitle ? 'disabled' : ''}>
+          <span class="slider"></span>
+        </label>
+        ${entry.isDefault ? '' : `
+          <i class="fas fa-pencil css-item-edit" data-id="${entry.id}"></i>
+          <i class="fas fa-times css-item-remove" data-id="${entry.id}"></i>
+        `}
+      </div>`).join('') : '<div style="padding: 10px 0; color: rgba(255,255,255,0.6); font-size: 13px;">No custom CSS added</div>';
       document.querySelectorAll('.css-toggle').forEach(t => t.addEventListener('change', e => {
-        console.log(`Toggling CSS ${e.target.dataset.id} to ${e.target.checked}`);
         if (!kchCSSTitle) window.obsidianClient.toggleCustomCSS(e.target.dataset.id, e.target.checked);
       }));
       document.querySelectorAll('.css-item-remove').forEach(r => r.addEventListener('click', e => {
@@ -1161,17 +1281,13 @@
       }));
     };
 
-    document.querySelector('.menu-item[data-tab="analytics"]').addEventListener('click', () => {
-      window.obsidianClient.openAnalyticsWindow();
-    });
-
     const applyUISettings = () => {
       const settings = {
         opacity: els.opacity.slider.value,
         scale: els.scale.slider.value,
         chatMode: els.chatMode.value,
         openingAnimations: els.openingAnimations.checked,
-        noHurtCam: els.noHurtCam.checked
+        hurtCamMode: els.hurtCamMode.value
       };
       window.obsidianClient.injectUICSS(settings);
       window.obsidianClient.saveSettings(settings);
@@ -1196,7 +1312,9 @@
       els.keyDisp.textContent = settings.menuToggleKey || 'ShiftRight';
       els.joinKeyDisp.textContent = settings.joinLinkKey || 'J';
       els.openingAnimations.checked = settings.openingAnimations || false;
-      els.noHurtCam.checked = settings.noHurtCam || false;
+      els.hurtCamMode.value = settings.hurtCamMode || 'default';
+      els.killicon.value = settings.killicon || '';
+      els.hitmark.value = settings.hitmark || '';
       window.obsidianClient.setDevTools(els.devTools.checked);
       window.obsidianClient.setMenuToggleKey(els.keyDisp.textContent);
       window.obsidianClient.setJoinLinkKey(els.joinKeyDisp.textContent);
@@ -1209,10 +1327,9 @@
 
     els.devTools.addEventListener('change', () => window.obsidianClient.saveSettings({ devToolsEnabled: els.devTools.checked }));
     els.background.addEventListener('input', debounce(applyBackground, 100));
-    Object.values(els.sliders).forEach(({ slider, value, unit = '' }) => slider.addEventListener('input', () => {
-      value.textContent = slider.value + unit;
-      applyGeneralSettings();
-    }));
+    Object.entries(els.sliders).forEach(([key, { slider, value, unit = '', min, max, step }]) => {
+      handleSliderInput(slider, value, unit, min, max, step, key === 'opacity' || key === 'scale' ? applyUISettings : applyGeneralSettings);
+    });
     els.openSwapperFolder = document.getElementById('open-swapper-folder');
     els.openSwapperFolder.addEventListener('click', () => window.obsidianClient.openSwapperFolder());
     els.resetButton.addEventListener('click', resetSettings);
@@ -1230,7 +1347,12 @@
     els.kchAssetsBar.addEventListener('click', () => window.obsidianClient.openAssetsGallery());
     els.kchTexturesBar.addEventListener('click', () => window.obsidianClient.openTexturesGallery());
     els.kchCrosshairsBar.addEventListener('click', () => window.obsidianClient.openCrosshairsGallery());
-    els.noHurtCam.addEventListener('change', applyUISettings);
+    els.hurtCamMode.addEventListener('change', () => {
+      const settings = { hurtCamMode: els.hurtCamMode.value };
+      window.obsidianClient.saveSettings(settings);
+      window.obsidianClient.reloadMainWindow();
+    });
+
     els.addCSSBar.addEventListener('click', () => {
       if (window.obsidianClient.getSettings().kchCSSTitle) return;
       editingCSSId = null;
@@ -1266,6 +1388,15 @@
       loadCSSList();
     });
 
+    const applyKillIconAndHitmark = () => {
+      const killicon = els.killicon.value.trim();
+      const hitmark = els.hitmark.value.trim();
+      window.obsidianClient.injectKillIconAndHitmarkCSS({ killicon, hitmark });
+      window.obsidianClient.saveSettings({ killicon, hitmark });
+    };
+
+    els.killicon.addEventListener('input', debounce(applyKillIconAndHitmark, 100));
+    els.hitmark.addEventListener('input', debounce(applyKillIconAndHitmark, 100));
     els.keyBtn.addEventListener('click', () => {
       settingKey = true;
       els.keyBtn.textContent = 'Press a key...';
@@ -1294,15 +1425,6 @@
       }
     });
 
-    els.opacity.slider.addEventListener('input', () => {
-      els.opacity.value.textContent = els.opacity.slider.value + '%';
-      applyUISettings();
-    });
-
-    els.scale.slider.addEventListener('input', () => {
-      els.scale.value.textContent = els.scale.slider.value + '%';
-      applyUISettings();
-    });
 
     els.chatMode.addEventListener('change', applyUISettings);
 
@@ -1323,32 +1445,16 @@
     }));
 
     function switchTab(tabId) {
-      document.querySelectorAll('.menu-item').forEach(item => {
-        item.classList.remove('active');
-      });
-      document.querySelectorAll('.content-panel, .tab-content').forEach(content => {
-        content.classList.remove('active');
-      });
-
+      document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+      document.querySelectorAll('.content-panel, .tab-content').forEach(content => content.classList.remove('active'));
       document.querySelector(`.menu-item[data-tab="${tabId}"]`).classList.add('active');
       const panelId = tabId === 'analytics' ? 'analytics' : `${tabId}-panel`;
       document.getElementById(panelId).classList.add('active');
-
-      if (tabId === 'analytics') {
-        analyticsUI.loadAnalytics();
-      }
+      if (tabId === 'analytics') analyticsUI.loadAnalytics();
     }
 
-    document.querySelectorAll('.menu-item').forEach(item => {
-      item.addEventListener('click', () => {
-        switchTab(item.dataset.tab);
-      });
-    });
-
-    window.addEventListener('load', () => {
-      switchTab('general');
-    });
-
+    document.querySelectorAll('.menu-item').forEach(item => item.addEventListener('click', () => switchTab(item.dataset.tab)));
+    window.addEventListener('load', () => switchTab('general'));
     loadSettings();
   </script>
   <script src="src/analyticsUI.js"></script>
