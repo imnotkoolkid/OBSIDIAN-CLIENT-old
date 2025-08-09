@@ -32,7 +32,6 @@ You can download the preview build from the [**GitHub Releases**](https://github
 ##  About This Build
 
 This repository exists **only** to share a preview of the work that had been done before the project was paused.  
-It’s meant for **testing, curiosity, and reference purposes**, not for production use.
 
 - **No active development**: this build won’t receive updates or bug fixes from the original developers.
 - **Feature set may be incomplete** compared to what was originally planned.
@@ -56,3 +55,5 @@ Made with ❤️ by
 - [zenos](https://github.com/Dev-Zenos)  
 
 ---
+
+[main repo](https://github.com/imnotkoolkid/OBSIDIAN-CLIENT)
