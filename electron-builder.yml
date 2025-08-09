@@ -1,0 +1,27 @@
+appId: com.imnotkoolkid.obsidianclient
+productName: Obsidian Client
+directories:
+  output: "dist"
+npmRebuild: false
+electronVersion: "37.2.0"
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+        - ia32
+  icon: "assets/Obsidian Client.ico"
+  artifactName: "${name}-setup-win-${arch}-${version}.${ext}"
+
+mac:
+  target: dmg
+  icon: "assets/Obsidian Client.icns"
+  artifactName: "${name}-setup-mac-${version}.${ext}"
+  category: public.app-category.games
+
+publish:
+  - provider: github
+    owner: imnotkoolkid
+    repo: obsidian-client
+    releaseType: draft
