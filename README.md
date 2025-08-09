@@ -17,6 +17,7 @@
 > ⚠️ **Important:** This is **not** the final version of Obsidian Client.  
 > The original project was **dropped midway** and development is currently paused.  
 > What you see here is an **incomplete build** — it contains missing features, and unfinished work.
+> Despite that, it is **stable**, **working without problems**, and fully **downloadable**.
 
 ---
 ##  Download
