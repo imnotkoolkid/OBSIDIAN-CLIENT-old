@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://github.com/imnotkoolkid/OBSIDIAN-CLIENT-PREVIEW/releases/latest">
-    <img src="https://img.shields.io/github/downloads/imnotkoolkid/OBSIDIAN-CLIENT-PREVIEW/total?style=for-the-badge&logo=github&logoColor=white" />
+    <img src="https://img.shields.io/github/downloads/imnotkoolkid/OBSIDIAN-CLIENT-preview/total?style=for-the-badge&logo=github&logoColor=white" />
   </a>
 
   <a href="https://discord.gg/KmRzbNPWfQ">
