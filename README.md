@@ -1,9 +1,9 @@
 # Obsidian Client – Preview Build
 
 <p align="center">
-  <a href="https://github.com/imnotkoolkid/OBSIDIAN-CLIENT-PREVIEW/releases/latest">
-    <img src="https://img.shields.io/github/downloads/imnotkoolkid/OBSIDIAN-CLIENT-preview/total?style=for-the-badge&logo=github&logoColor=white" />
-  </a>
+<a href="https://github.com/imnotkoolkid/OBSIDIAN-CLIENT-preview/releases/latest">
+  <img src="https://img.shields.io/github/downloads/imnotkoolkid/OBSIDIAN-CLIENT-preview/total?style=for-the-badge&logo=github&logoColor=white" />
+</a>
 
   <a href="https://discord.gg/KmRzbNPWfQ">
     <img src="https://img.shields.io/badge/Join-Discord-5661F5?style=for-the-badge&logo=discord&logoColor=white" />
