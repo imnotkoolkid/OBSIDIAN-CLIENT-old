@@ -45,5 +45,6 @@ contextBridge.exposeInMainWorld("obsidianClient", {
   openTexturesGallery: () => ipcRenderer.send("open-textures-gallery"),
   openCrosshairsGallery: () => ipcRenderer.send("open-crosshairs-gallery"),
   openSwapperFolder: () => ipcRenderer.send("open-swapper-folder"),
-  blockHurtCamImage: (enabled) => ipcRenderer.send("block-hurt-cam-image", enabled)
+  blockHurtCamImage: (enabled) => ipcRenderer.send("block-hurt-cam-image", enabled),
+  injectKillIconAndHitmarkCSS: (settings) => ipcRenderer.send("inject-killicon-hitmark-css", settings),
 });
