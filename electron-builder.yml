@@ -3,7 +3,7 @@ productName: Obsidian Client
 directories:
   output: "dist"
 npmRebuild: false
-electronVersion: "37.2.0"
+
 
 win:
   target:
